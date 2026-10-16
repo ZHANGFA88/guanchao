@@ -873,6 +873,135 @@
       "site_fulltext": false,
       "syndicate_fulltext": false,
       "icon_url": "https://www.google.com/s2/favicons?domain=barrons.com&sz=64"
+    },
+    {
+      "id": "push-wallstreetcn",
+      "name": "华尔街见闻快讯",
+      "kind": "external",
+      "config": {},
+      "tier": "T1",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 30,
+      "tags": [
+        "快讯"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "icon_url": "https://www.google.com/s2/favicons?domain=wallstreetcn.com&sz=64"
+    },
+    {
+      "id": "push-yicai",
+      "name": "第一财经",
+      "kind": "external",
+      "config": {},
+      "tier": "T1",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 30,
+      "tags": [
+        "财经"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "icon_url": "https://www.google.com/s2/favicons?domain=yicai.com&sz=64"
+    },
+    {
+      "id": "push-caixin",
+      "name": "财新网",
+      "kind": "external",
+      "config": {},
+      "tier": "T1",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 30,
+      "tags": [
+        "财经"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "icon_url": "https://www.google.com/s2/favicons?domain=caixin.com&sz=64"
+    },
+    {
+      "id": "push-stcn",
+      "name": "证券时报",
+      "kind": "external",
+      "config": {},
+      "tier": "T1",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 30,
+      "tags": [
+        "财经",
+        "A股"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "icon_url": "https://www.google.com/s2/favicons?domain=stcn.com&sz=64"
+    },
+    {
+      "id": "push-nbd",
+      "name": "每日经济新闻",
+      "kind": "external",
+      "config": {},
+      "tier": "T2",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 30,
+      "tags": [
+        "财经"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "icon_url": "https://www.google.com/s2/favicons?domain=nbd.com.cn&sz=64"
+    },
+    {
+      "id": "push-ftchinese",
+      "name": "FT中文网",
+      "kind": "external",
+      "config": {},
+      "tier": "T2",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 30,
+      "tags": [
+        "国际"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "icon_url": "https://www.google.com/s2/favicons?domain=ftchinese.com&sz=64"
+    },
+    {
+      "id": "push-21jingji",
+      "name": "21世纪经济报道",
+      "kind": "external",
+      "config": {},
+      "tier": "T2",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 30,
+      "tags": [
+        "财经"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "icon_url": "https://www.google.com/s2/favicons?domain=21jingji.com&sz=64"
+    },
+    {
+      "id": "push-eeo",
+      "name": "经济观察报",
+      "kind": "external",
+      "config": {},
+      "tier": "T2",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 30,
+      "tags": [
+        "财经"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "icon_url": "https://www.google.com/s2/favicons?domain=eeo.com.cn&sz=64"
     }
   ]
 }

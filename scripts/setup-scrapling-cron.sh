@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 把南华早报 / 巴伦周刊的 Scrapling 推送装成 macOS 定时任务（每 30 分钟一次）。
+# 把浏览器采集推送（财新/第一财经/华尔街见闻快讯/南华早报/巴伦等 13 个 external 信源）装成 macOS 定时任务（每 30 分钟一次）。
 # 前置（一次性，已在 docs/SCRAPLING.md 里）：python3 -m venv .venv-scrapling
 #   .venv-scrapling/bin/pip install "scrapling[fetchers]" ; .venv-scrapling/bin/scrapling install
 # 用法：bash scripts/setup-scrapling-cron.sh        （安装/检查）
