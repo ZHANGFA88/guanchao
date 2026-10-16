@@ -466,3 +466,32 @@ export interface TopicPage {
   pageCount: number;
   pageSize: number;
 }
+
+/** One topic on the observatory monitor: its collected volume drives the particle cloud's size. */
+export interface MonitorTopic {
+  slug: string;
+  name: string;
+  group: TopicGroupKey;
+  total: number;
+}
+
+/** A material flowing through the observatory: a collected article on its way to the news stream. */
+export interface MonitorFeedItem {
+  id: string;
+  title: string;
+  summary: string | null;
+  source: string;
+  at: string;
+  kind: string;
+  topics: string[];
+}
+
+/** The observatory deck's data: topic graph (topics + weighted co-occurrence pairs), the scan feed, totals. */
+export interface MonitorResponse {
+  topics: MonitorTopic[];
+  /** [slugA, slugB, weight] triples, strongest first, at most 300. */
+  pairs: Array<[string, string, number]>;
+  feed: { items: MonitorFeedItem[] };
+  stats: { sources: number; items: number; today: number };
+  generatedAt: string;
+}

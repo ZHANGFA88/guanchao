@@ -26,3 +26,12 @@
 ## 市况台复刻要点
 - 同契约自建 /api/site/monitor（我们库里 topics/stories/pool 都能算出 topics/pairs/feed）。
 - 星图词表换财经（机构/领域/形态三组），材料=财经快讯+政策文件+全球源（美股/港股必备：Yahoo Finance、MarketWatch、港媒财经等），扫描节奏与状态机照搬。
+
+## 补充（2026-10-16 19:41 放大截图确认，第一轮研读漏项）
+- **蜘蛛**：扫描瞬间，当前材料卡上会出现一只黑色「关节蜘蛛」——红色圆点为身，多条带关节圆点的折线为腿，腿脚锚在该材料的话题标签/卡片边缘，一条长腿斜跨进星图、落点为目标话题节点（红点）。它把「材料→话题」的归属关系画成了一只趴在卡片上的机械蜘蛛。复刻时必须有。
+- **星图节点不是气泡**：每个话题是一团彩色粒子点云（条目颗粒按分类着色）+ 词名 + 计数（机构名下带数字），外圈有一层大圆边界；全景截图看像灰气泡，放大才看清。
+
+## 实现状态（2026-10-16 20:05 已落地到本站）
+- 后端：packages/backend/src/site/monitor.ts + GET /api/site/monitor、/api/site/pool/today。话题归属优先用框架自带 topicMembership（分析 tags+标题 pattern），无分析时回退标题词法匹配（实体 pattern + 标签 + TAG_SYNONYMS 同义词）；pairs 为同篇共现计数。
+- 前端：apps/web/app/features/observatory/（StarMap 圆盘粒子图、Observatory 扫描回放与蜘蛛、motion-store 全局动效开关），首页 routes/home.tsx 改为观测台构图（总览头 + 计数跳字 + 03 新闻流 + 04 热点观察）；全站浅色主题改为暖纸令牌（app.css :root）。
+- 已知差距：冷启动数据少时点云稀疏（按真实条数缩放）；热点观察仍用框架 HotTopics 组件（原站的热度曲线+讨论卡待后续）；材料卡摘要在推送快讯上为空（源数据只有标题）。
