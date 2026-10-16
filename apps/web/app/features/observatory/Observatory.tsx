@@ -34,6 +34,9 @@ export function Observatory() {
   const [results, setResults] = useState<ScanResult[]>([]);
   const [focused, setFocused] = useState<string | null>(null);
   const [reading, setReading] = useState(false);
+  const [readTab, setReadTab] = useState<"follow" | "browse">("follow");
+  const [expandSources, setExpandSources] = useState(false);
+  const [expandTopics, setExpandTopics] = useState(false);
   const [spider, setSpider] = useState<SpiderLeg | null>(null);
   const deckRef = useRef<HTMLElement | null>(null);
   const cardRefs = useRef(new Map<string, HTMLDivElement>());
@@ -208,6 +211,20 @@ export function Observatory() {
           <h5 className="mb-2.5 px-1 text-[11px] font-semibold tracking-[0.18em] text-ink-4">
             {focused ? `话题聚焦 · ${topicName(focused)}` : "扫描阅读"}
           </h5>
+          {!focused && (
+            <div className="mb-2.5 flex gap-1 px-1">
+              {(["follow", "browse"] as const).map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => setReadTab(t)}
+                  className={`rounded-full px-3 py-1 text-[12px] font-medium ${readTab === t ? "bg-ink text-bg" : "border border-line text-ink-3"}`}
+                >
+                  {t === "follow" ? "跟随扫描" : "浏览新闻"}
+                </button>
+              ))}
+            </div>
+          )}
           {focused ? (
             <div>
               {focusItems.length > 0 && (
@@ -222,6 +239,16 @@ export function Observatory() {
                 <button type="button" className="rounded-control border border-line px-2 py-0.5" onClick={() => setFocusPos((p) => p + 1)}>下一条 →</button>
               </div>
               <Link to={`/topics/${focused}`} className="mt-2 inline-block text-[12.5px] text-accent-ink hover:underline">查看话题全部内容 ↗</Link>
+            </div>
+          ) : readTab === "browse" ? (
+            <div className="scrollbar-thin max-h-[540px] overflow-y-auto pr-1">
+              {(data?.feed.items ?? []).map((item) => (
+                <Link key={item.id} to="/all" className="block border-b border-line-soft px-1 py-2 last:border-0 hover:bg-surface-2">
+                  <p className="line-clamp-1 text-[13px] font-medium">{item.title}</p>
+                  <p className="mt-0.5 text-[11px] text-ink-4">{item.source} · {fmtDayTime(item.at)}</p>
+                </Link>
+              ))}
+              {(data?.feed.items.length ?? 0) === 0 && <p className="px-1 py-4 text-[12.5px] text-ink-3">还没有汇入的新闻。</p>}
             </div>
           ) : (
             <div className="scrollbar-thin max-h-[540px] space-y-2 overflow-y-auto pr-1">
@@ -242,6 +269,30 @@ export function Observatory() {
                   </p>
                 </div>
               ))}
+              <div className="space-y-1 pt-1">
+                <button type="button" onClick={() => setExpandSources((v) => !v)} className="block px-1 text-left text-[12px] font-medium text-ink-3 hover:text-accent-ink">
+                  {expandSources ? "▾" : "▸"} 展开全部来源（{data?.river.sources.length ?? 0}）
+                </button>
+                {expandSources && (
+                  <div className="px-1">
+                    {(data?.river.sources ?? []).map((src) => (
+                      <p key={src.id} className="flex justify-between py-0.5 text-[12px] text-ink-3"><span>{src.name}</span><span className="tabular-nums">{src.total} 条</span></p>
+                    ))}
+                  </div>
+                )}
+                <button type="button" onClick={() => setExpandTopics((v) => !v)} className="block px-1 text-left text-[12px] font-medium text-ink-3 hover:text-accent-ink">
+                  {expandTopics ? "▾" : "▸"} 展开全部话题（{data?.topics.length ?? 0}）
+                </button>
+                {expandTopics && (
+                  <div className="px-1">
+                    {(data?.topics ?? []).map((t) => (
+                      <button key={t.slug} type="button" onClick={() => setFocused(t.slug)} className="flex w-full justify-between py-0.5 text-left text-[12px] text-ink-3 hover:text-accent-ink">
+                        <span>{t.name}</span><span className="tabular-nums">{t.total} 条</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>

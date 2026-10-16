@@ -7,9 +7,10 @@ import { filterParams, hasFeedFilters, itemListLd, listPath, pageMeta, readFilte
 import { inNav } from "../components/shell/nav";
 import type { Screen } from "../components/shell/screens";
 import { Timeline } from "../features/feed/Timeline";
-import { HotTopics } from "../features/feed/HotTopics";
 import { SearchField } from "../features/feed/Filters";
 import { Observatory, TodayCounter } from "../features/observatory/Observatory";
+import { River } from "../features/observatory/River";
+import { HotWatch } from "../features/observatory/HotWatch";
 import { toggleMoving, useMoving } from "../features/observatory/motion-store";
 import { SITE } from "@aihot/site";
 
@@ -82,13 +83,16 @@ export default function Home() {
 
       <section className="mt-8">
         <SectionHead no="03" title="新闻流" note="从来源，到话题" to="/all" toLabel="阅读完整新闻流" />
-        <Timeline initial={data} filters={data.filters} />
+        <River />
+        <div className="mt-5">
+          <Timeline initial={data} filters={data.filters} />
+        </div>
       </section>
 
       <section className="mt-8">
         <SectionHead no="04" title="热点观察" note="一个热点，多种声音" to="/hot" toLabel="全部热点" />
         {data.hot && inNav("/hot") ? (
-          <HotTopics entries={data.hot} />
+          <HotWatch entries={data.hot} />
         ) : (
           <p className="rounded-card border border-line bg-surface px-5 py-6 text-[13.5px] text-ink-3">
             热点还在形成中——同一事件的报道积累到足够多时，这里会把它们聚成一个热点，附上各家声音。
