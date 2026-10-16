@@ -10,36 +10,36 @@
 
 `itemType` 必须七选一：
 
-- `model_release`：新模型或大版本更新
-- `product_launch`：新产品、工具或重大功能更新
-- `tool_or_prompt`：可直接复用的方法、Prompt、Skill 或技巧
-- `research_paper`：论文、研究或技术报告
-- `industry_event`：融资、收购、监管、诉讼、商业动作或人事
-- `opinion_analysis`：观点、行业判断、复盘或长访谈
-- `tutorial_explainer`：教程、科普、解读或评测
+- `policy_release`：央行、证监会、财政部、交易所等官方机构的政策、规则与监管动作
+- `market_event`：指数与市场层面的行情异动、宏观数据发布及其冲击
+- `company_disclosure`：上市公司公告、财报业绩、并购重组、回购增减持、人事与业务进展
+- `research_report`：学术研究、深度调查与数据研究（包括 AI 安全研究与评测）
+- `industry_event`：行业层面的供需、竞争、价格与格局变化事件
+- `opinion_analysis`：观点、解读、预测、策略与复盘
+- `explainer`：科普、教程、规则讲解与数据解读
 
-优先级：发了模型选 model_release；发了工具选 product_launch；发了 Prompt 或方法选 tool_or_prompt；论文优先 research_paper；评测选 tutorial_explainer。
+优先级：官方发了政策选 policy_release；指数和数据层面的事选 market_event；单家公司的披露选 company_disclosure；研究与调查优先 research_report；只有判断没有新事实选 opinion_analysis。
 
-输出前检查 `itemType` 与第一个分类标签是否自洽：`model_release` 对应“模型发布”，`product_launch` 对应“产品更新”，`research_paper` 对应“论文/研究”，`industry_event` 对应“行业动态”或“政策/监管”，`opinion_analysis` 对应“大佬观点”或“现象/趋势”，`tutorial_explainer` 对应“教程/实践”或“评测/基准”。如果二者冲突，按当前材料的核心事件修正后再输出。
+输出前检查 `itemType` 与第一个分类标签是否自洽：`policy_release` 对应“政策/监管”，`market_event` 对应“行情异动”或“宏观数据”，`company_disclosure` 对应“公司公告”“财报业绩”或“并购重组”，`research_report` 对应“AI安全”“宏观数据”或“行业动态”，`industry_event` 对应“行业动态”，`opinion_analysis` 对应“观点解读”，`explainer` 对应“观点解读”或“其他”。如果二者冲突，按当前材料的核心事件修正后再输出。
 
 ## 作者角色
 
 `authorRole` 必须三选一，回答“这条内容的信息源头是不是作者本人”：
 
-- `principal`：作者本人或所属组织就是当事方，例如官方账号发布自家产品、员工宣布或说明自家产品。
+- `principal`：作者本人或所属组织就是当事方，例如官方机构发布自家政策、上市公司发布自家公告。
 - `observer`：作者以第一手身份独立实测、亲历、原创分析或产出原创方法。
 - `relayer`：作者在转发、引用、翻译或归纳他人信息。主体信息来自引用块时选 relayer。
 
 ## 标签
 
-`tags` 输出 1–6 个字符串。第一个必须从以下分类标签中选一个：模型发布、产品更新、开源/仓库、论文/研究、教程/实践、大佬观点、评测/基准、安全/对齐、现象/趋势、行业动态、政策/监管、非AI/通用工具、其他。
+`tags` 输出 1–6 个字符串。第一个必须从以下分类标签中选一个：政策/监管、宏观数据、行情异动、公司公告、财报业绩、并购重组、行业动态、国际市场、AI安全、观点解读、其他。
 
 其后可选 0–5 个适用标签，并且只能来自以下两个白名单：
 
-- 主题：Agent、编码、推理、多模态、语音、视频、图像生成、RAG、端侧、数据/训练、搜索、部署/工程、开源生态、具身智能、MCP/工具调用
-- 实体：OpenAI、Anthropic、DeepSeek、DeepMind、Google、Meta、Microsoft、xAI、Hugging Face、GitHub、arXiv
+- 主题：货币政策、汇率、利率、房地产、新能源、半导体、医药、消费、金融、能源、AI产业、贸易关税、财政、就业
+- 实体：中国人民银行、证监会、财政部、发改委、国家统计局、美联储、欧洲央行、上交所、深交所、港交所、腾讯、阿里巴巴、贵州茅台、宁德时代、英伟达、苹果、特斯拉
 
-正文中即使明确出现了 NVIDIA、Apple、阿里等其他实体，也不要把它们放进 `tags`。不要创造白名单之外的标签。没有适用的主题或实体时，只返回第一个分类标签；例如学校限制 AI 使用的监管新闻，不需要强行归到“编码”或“推理”。
+正文中即使明确出现了其他公司或机构，也不要把白名单之外的名字放进 `tags`。不要创造白名单之外的标签。没有适用的主题或实体时，只返回第一个分类标签；例如一项行业监管政策，不需要强行归到某个公司实体。
 
 ## 候选阅读价值
 
@@ -59,4 +59,4 @@
 
 只返回合法 JSON，不要 Markdown，不要解释。顶层必须且只能包含以下六个字段：
 
-{"itemType":"product_launch","authorRole":"principal","tags":["产品更新","Agent"],"editorialJudgment":"原文给出了能力变化和开放入口，读者可以据此判断它会怎样改变现有工作流。","titleZh":"某产品发布智能体功能","summaryZh":"某产品发布新的智能体功能，给出了开放入口和主要能力变化。"}
+{"itemType":"policy_release","authorRole":"principal","tags":["政策/监管","货币政策"],"editorialJudgment":"原文给出了政策的具体幅度和生效时间，读者可以据此判断它对流动性和市场预期的影响。","titleZh":"央行下调政策利率 10 个基点","summaryZh":"央行宣布下调政策利率 10 个基点，即日起生效，并同步下调存款准备金率。"}
