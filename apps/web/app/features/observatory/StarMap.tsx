@@ -38,7 +38,7 @@ interface Placed {
   cloud: number;
   particles: Array<{ dx: number; dy: number; r: number; fill: string; o: number }>;
   phase: number;
-  speed: number;
+  speed: number; // near-zero drift kept only as a conservative stand-in (no drift found in the reference engine)
 }
 
 function layout(topics: Topic[], pairs: MonitorResponse["pairs"]): Map<string, Placed> {
@@ -81,7 +81,7 @@ function layout(topics: Topic[], pairs: MonitorResponse["pairs"]): Map<string, P
       const d = Math.abs(rand() + rand() - 1) * cloud;
       return { dx: Math.cos(a) * d, dy: Math.sin(a) * d * 0.92, r: 1.0 + rand() * 1.2, fill: palette[Math.floor(rand() * palette.length)]!, o: 0.45 + rand() * 0.5 };
     });
-    placed.set(t.slug, { topic: t, x, y, cloud, particles, phase: rand() * Math.PI * 2, speed: 0.1 + rand() * 0.16 });
+    placed.set(t.slug, { topic: t, x, y, cloud, particles, phase: rand() * Math.PI * 2, speed: 0.004 + rand() * 0.006 });
   }
   // Relaxation: keep clouds apart and inside the disc.
   const list = [...placed.values()];
@@ -110,9 +110,8 @@ function layout(topics: Topic[], pairs: MonitorResponse["pairs"]): Map<string, P
   return placed;
 }
 
-export function StarMap({ data, moving, focused, onFocus }: {
+export function StarMap({ data, focused, onFocus }: {
   data: MonitorResponse;
-  moving: boolean;
   focused: string | null;
   onFocus: (slug: string | null) => void;
 }) {
@@ -120,6 +119,7 @@ export function StarMap({ data, moving, focused, onFocus }: {
   const [hovered, setHovered] = useState<string | null>(null);
   const groupRefs = useRef(new Map<string, SVGGElement>());
   const edgeRefs = useRef(new Map<string, SVGPathElement>());
+  const dotRefs = useRef(new Map<string, SVGCircleElement>());
   const active = focused ?? hovered;
 
   const neighbours = useMemo(() => {
@@ -133,22 +133,24 @@ export function StarMap({ data, moving, focused, onFocus }: {
     if (!active) return [];
     return data.pairs
       .filter(([a, b]) => a === active || b === active)
-      .map(([a, b, w]) => ({ slug: a === active ? b : a, w }))
+      .map(([a, b, w]) => ({ slug: a === active ? b : a, w, edge: `${a}|${b}` }))
       .sort((x, y) => y.w - x.w)
       .slice(0, 3);
   }, [active, data.pairs]);
+
+  const hotEdges = useMemo(() => topPartners.map((p, i) => ({ ...p, idx: i })), [topPartners]);
 
   useEffect(() => {
     let raf = 0;
     let last = 0;
     const tick = (ts: number) => {
       raf = requestAnimationFrame(tick);
-      if (!moving || document.hidden) return;
+      if (document.hidden) return;
       const t = ts / 1000;
       const pos = new Map<string, { x: number; y: number }>();
       for (const p of placed.values()) {
-        const x = p.x + Math.cos(t * p.speed + p.phase) * 3.4;
-        const y = p.y + Math.sin(t * p.speed * 0.9 + p.phase) * 2.8;
+        const x = p.x + Math.cos(t * p.speed + p.phase) * 0.9;
+        const y = p.y + Math.sin(t * p.speed * 0.9 + p.phase) * 0.8;
         pos.set(p.topic.slug, { x, y });
         groupRefs.current.get(p.topic.slug)?.setAttribute("transform", `translate(${x},${y})`);
       }
@@ -160,17 +162,44 @@ export function StarMap({ data, moving, focused, onFocus }: {
           if (el && A && B) el.setAttribute("d", edgePath(A, B));
         }
       }
+      // red hotspots travelling along the top-3 co-occurrence edges of the active node
+      for (const e of hotEdges) {
+        const dot = dotRefs.current.get(e.edge);
+        if (!dot) continue;
+        const pair = data.pairs.find(([a, b]) => `${a}|${b}` === e.edge);
+        if (!pair) continue;
+        const A = pos.get(pair[0]), B = pos.get(pair[1]);
+        if (!A || !B) continue;
+        const tt = (ts / 850 + e.idx * 0.33) % 1;
+        const mx = (A.x + B.x) / 2, my = (A.y + B.y) / 2;
+        const cx = mx + (CX - mx) * 0.14, cy = my + (CY - my) * 0.14;
+        const u = 1 - tt;
+        dot.setAttribute("cx", String(u * u * A.x + 2 * u * tt * cx + tt * tt * B.x));
+        dot.setAttribute("cy", String(u * u * A.y + 2 * u * tt * cy + tt * tt * B.y));
+        dot.setAttribute("opacity", "0.95");
+      }
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [moving, placed, data.pairs]);
+  }, [placed, data.pairs, hotEdges]);
 
-  const hubGenre = useMemo(() => [...data.topics].filter((t) => t.group === "genre").sort((a, b) => b.total - a.total)[0]?.slug, [data.topics]);
-  const hubField = useMemo(() => [...data.topics].filter((t) => t.group === "field").sort((a, b) => b.total - a.total)[0]?.slug, [data.topics]);
   const activePlaced = active ? placed.get(active) : null;
+
+  /** Tiered label sizes by cumulative count (spec §3): 20 / 17 / 15 / 13px; companies stay 12px + count. */
+  const labelSize = (t: Topic): number => {
+    if (t.group === "company") return 12;
+    if (t.total >= 1000) return 20;
+    if (t.total >= 100) return 17;
+    if (t.total >= 10) return 15;
+    return 13;
+  };
 
   return (
     <div className="relative">
+      <style>{`
+        .obs-edge-hot { animation: edge-grow 0.38s ease-out; }
+        @keyframes edge-grow { from { stroke-width: 1.1; } to { stroke-width: 2.6; } }
+      `}</style>
       <svg viewBox={`0 0 ${W} ${H}`} className="block h-auto w-full" role="img" aria-label="话题星图">
         <circle cx={CX} cy={CY} r={R_OUT} fill="none" stroke="var(--line)" strokeWidth="1" />
         {data.pairs.map(([a, b, w]) => {
@@ -182,6 +211,7 @@ export function StarMap({ data, moving, focused, onFocus }: {
             <path
               key={`${a}|${b}`}
               ref={(el) => { if (el) edgeRefs.current.set(`${a}|${b}`, el); }}
+              className={hot ? "obs-edge-hot" : undefined}
               d={edgePath(A, B)}
               fill="none"
               stroke={hot ? "#e0521f" : (PALETTES[A.topic.group] ?? PALETTES.field!)[0]}
@@ -190,10 +220,18 @@ export function StarMap({ data, moving, focused, onFocus }: {
             />
           );
         })}
+        {hotEdges.map((e) => (
+          <circle
+            key={`hot-${e.edge}`}
+            ref={(el) => { if (el) dotRefs.current.set(e.edge, el); else dotRefs.current.delete(e.edge); }}
+            r="3"
+            fill="#e0521f"
+            opacity="0"
+          />
+        ))}
         {[...placed.values()].map((p) => {
           const dim = neighbours !== null && !neighbours.has(p.topic.slug);
-          const isHub = p.topic.slug === hubGenre || p.topic.slug === hubField;
-          const labelFill = p.topic.slug === hubGenre ? "#b03a6b" : p.topic.slug === hubField ? "#b3402a" : "var(--ink-2)";
+          const hoveredNow = p.topic.slug === active;
           return (
             <g
               key={p.topic.slug}
@@ -213,9 +251,9 @@ export function StarMap({ data, moving, focused, onFocus }: {
               <text
                 textAnchor="middle"
                 dy="0.35em"
-                fontSize={isHub ? 13.5 : 11.5}
-                fontWeight={isHub ? 700 : 500}
-                fill={labelFill}
+                fontSize={labelSize(p.topic)}
+                fontWeight={hoveredNow ? 700 : 500}
+                fill={hoveredNow ? "#e0521f" : "var(--ink-2)"}
                 style={{ paintOrder: "stroke", stroke: "var(--surface)", strokeWidth: 3, strokeLinejoin: "round" }}
               >
                 {p.topic.name}
