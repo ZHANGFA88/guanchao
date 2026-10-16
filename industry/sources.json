@@ -19,7 +19,8 @@
         "官方"
       ],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://federalreserve.gov/favicon.ico"
     },
     {
       "id": "rss-sec-press",
@@ -39,7 +40,8 @@
         "官方"
       ],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://www.google.com/s2/favicons?domain=sec.gov&sz=64"
     },
     {
       "id": "rss-ecb-press",
@@ -59,7 +61,8 @@
         "官方"
       ],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://ecb.europa.eu/favicon.ico"
     },
     {
       "id": "rss-36kr",
@@ -79,7 +82,8 @@
         "媒体"
       ],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://www.36kr.com/favicon.ico"
     },
     {
       "id": "rss-nyt-business",
@@ -99,7 +103,8 @@
         "媒体"
       ],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://nytimes.com/favicon.ico"
     },
     {
       "id": "push-finflash",
@@ -114,7 +119,8 @@
         "快讯"
       ],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://eastmoney.com/favicon.ico"
     },
     {
       "id": "push-aisafety",
@@ -129,7 +135,8 @@
         "AI安全"
       ],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://aisafetyhot.com/favicon.ico"
     },
     {
       "id": "rss-yahoo-us",
@@ -149,7 +156,8 @@
         "美股"
       ],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://www.google.com/s2/favicons?domain=yahoo.com&sz=64"
     },
     {
       "id": "rss-yahoo-hk",
@@ -169,7 +177,8 @@
         "港股"
       ],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://www.google.com/s2/favicons?domain=yahoo.com&sz=64"
     },
     {
       "id": "rss-marketwatch",
@@ -189,7 +198,8 @@
         "美股"
       ],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://marketwatch.com/favicon.ico"
     },
     {
       "id": "rss-gnews-hk",
@@ -209,7 +219,8 @@
         "港股"
       ],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://www.google.com/s2/favicons?domain=news.google.com&sz=64"
     },
     {
       "id": "rss-bloomberg-markets",
@@ -226,7 +237,8 @@
       "interval_minutes": 30,
       "tags": [],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://bloomberg.com/favicon.ico"
     },
     {
       "id": "rss-cnbc-top",
@@ -243,7 +255,8 @@
       "interval_minutes": 30,
       "tags": [],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://www.google.com/s2/favicons?domain=cnbc.com&sz=64"
     },
     {
       "id": "rss-cnbc-finance",
@@ -260,7 +273,8 @@
       "interval_minutes": 30,
       "tags": [],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://www.google.com/s2/favicons?domain=cnbc.com&sz=64"
     },
     {
       "id": "rss-wsj-markets",
@@ -277,7 +291,8 @@
       "interval_minutes": 45,
       "tags": [],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://www.google.com/s2/favicons?domain=wsj.com&sz=64"
     },
     {
       "id": "rss-bbc-business",
@@ -294,7 +309,8 @@
       "interval_minutes": 45,
       "tags": [],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://bbc.com/favicon.ico"
     },
     {
       "id": "rss-guardian-business",
@@ -311,7 +327,8 @@
       "interval_minutes": 60,
       "tags": [],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://theguardian.com/favicon.ico"
     },
     {
       "id": "rss-nikkei-asia",
@@ -328,7 +345,8 @@
       "interval_minutes": 45,
       "tags": [],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://www.nikkei.com/favicon.ico"
     },
     {
       "id": "rss-investing",
@@ -345,7 +363,8 @@
       "interval_minutes": 30,
       "tags": [],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://investing.com/favicon.ico"
     },
     {
       "id": "rss-rthk-finance",
@@ -362,7 +381,8 @@
       "interval_minutes": 30,
       "tags": [],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://rthk.hk/favicon.ico"
     },
     {
       "id": "rss-rthk-local",
@@ -379,7 +399,8 @@
       "interval_minutes": 45,
       "tags": [],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://rthk.hk/favicon.ico"
     },
     {
       "id": "rss-rthk-gc",
@@ -396,7 +417,8 @@
       "interval_minutes": 60,
       "tags": [],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://rthk.hk/favicon.ico"
     },
     {
       "id": "push-scmp-business",
@@ -411,7 +433,8 @@
         "香港"
       ],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://www.google.com/s2/favicons?domain=scmp.com&sz=64"
     },
     {
       "id": "push-scmp-hk",
@@ -426,7 +449,8 @@
         "香港"
       ],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://www.google.com/s2/favicons?domain=scmp.com&sz=64"
     },
     {
       "id": "rss-bloomberg-economics",
@@ -443,7 +467,8 @@
       "interval_minutes": 45,
       "tags": [],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://bloomberg.com/favicon.ico"
     },
     {
       "id": "rss-bloomberg-tech",
@@ -460,7 +485,8 @@
       "interval_minutes": 45,
       "tags": [],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://bloomberg.com/favicon.ico"
     },
     {
       "id": "rss-forbes-business",
@@ -477,7 +503,8 @@
       "interval_minutes": 60,
       "tags": [],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://forbes.com/favicon.ico"
     },
     {
       "id": "rss-fortune",
@@ -494,7 +521,8 @@
       "interval_minutes": 60,
       "tags": [],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://www.google.com/s2/favicons?domain=fortune.com&sz=64"
     },
     {
       "id": "rss-economist-finance",
@@ -511,7 +539,8 @@
       "interval_minutes": 360,
       "tags": [],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://economist.com/favicon.ico"
     },
     {
       "id": "rss-cityam",
@@ -528,7 +557,8 @@
       "interval_minutes": 60,
       "tags": [],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://cityam.com/favicon.ico"
     },
     {
       "id": "rss-techcrunch",
@@ -545,7 +575,8 @@
       "interval_minutes": 45,
       "tags": [],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://techcrunch.com/favicon.ico"
     },
     {
       "id": "rss-arstechnica",
@@ -562,7 +593,8 @@
       "interval_minutes": 60,
       "tags": [],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://www.google.com/s2/favicons?domain=arstechnica.com&sz=64"
     },
     {
       "id": "rss-theverge",
@@ -579,7 +611,8 @@
       "interval_minutes": 60,
       "tags": [],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://theverge.com/favicon.ico"
     },
     {
       "id": "rss-mittechreview",
@@ -596,7 +629,8 @@
       "interval_minutes": 240,
       "tags": [],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://www.google.com/s2/favicons?domain=technologyreview.com&sz=64"
     },
     {
       "id": "rss-openai-news",
@@ -613,7 +647,8 @@
       "interval_minutes": 360,
       "tags": [],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://openai.com/favicon.ico"
     },
     {
       "id": "rss-hf-blog",
@@ -630,7 +665,8 @@
       "interval_minutes": 240,
       "tags": [],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://huggingface.co/favicon.ico"
     },
     {
       "id": "rss-stratechery",
@@ -647,7 +683,8 @@
       "interval_minutes": 720,
       "tags": [],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://stratechery.com/favicon.ico"
     },
     {
       "id": "rss-lesswrong",
@@ -666,7 +703,8 @@
         "AI安全"
       ],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://lesswrong.com/favicon.ico"
     },
     {
       "id": "rss-metr",
@@ -685,7 +723,8 @@
         "AI安全"
       ],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://metr.org/favicon.ico"
     },
     {
       "id": "rss-importai",
@@ -704,7 +743,8 @@
         "AI安全"
       ],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://importai.substack.com/favicon.ico"
     },
     {
       "id": "rss-semianalysis",
@@ -723,7 +763,8 @@
         "半导体"
       ],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://semianalysis.com/favicon.ico"
     },
     {
       "id": "rss-coindesk",
@@ -740,7 +781,8 @@
       "interval_minutes": 30,
       "tags": [],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://coindesk.com/favicon.ico"
     },
     {
       "id": "rss-cointelegraph",
@@ -757,7 +799,8 @@
       "interval_minutes": 30,
       "tags": [],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://cointelegraph.com/favicon.ico"
     },
     {
       "id": "rss-tmtpost",
@@ -774,7 +817,8 @@
       "interval_minutes": 45,
       "tags": [],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://tmtpost.com/favicon.ico"
     },
     {
       "id": "rss-digitimes",
@@ -793,7 +837,8 @@
         "半导体"
       ],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://digitimes.com/favicon.ico"
     },
     {
       "id": "rss-eetimes",
@@ -812,7 +857,8 @@
         "半导体"
       ],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://eetimes.com/favicon.ico"
     },
     {
       "id": "push-barrons",
@@ -825,7 +871,8 @@
       "interval_minutes": 30,
       "tags": [],
       "site_fulltext": false,
-      "syndicate_fulltext": false
+      "syndicate_fulltext": false,
+      "icon_url": "https://www.google.com/s2/favicons?domain=barrons.com&sz=64"
     }
   ]
 }
