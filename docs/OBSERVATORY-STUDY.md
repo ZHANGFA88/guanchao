@@ -35,3 +35,10 @@
 - 后端：packages/backend/src/site/monitor.ts + GET /api/site/monitor、/api/site/pool/today。话题归属优先用框架自带 topicMembership（分析 tags+标题 pattern），无分析时回退标题词法匹配（实体 pattern + 标签 + TAG_SYNONYMS 同义词）；pairs 为同篇共现计数。
 - 前端：apps/web/app/features/observatory/（StarMap 圆盘粒子图、Observatory 扫描回放与蜘蛛、motion-store 全局动效开关），首页 routes/home.tsx 改为观测台构图（总览头 + 计数跳字 + 03 新闻流 + 04 热点观察）；全站浅色主题改为暖纸令牌（app.css :root）。
 - 已知差距：冷启动数据少时点云稀疏（按真实条数缩放）；热点观察仍用框架 HotTopics 组件（原站的热度曲线+讨论卡待后续）；材料卡摘要在推送快讯上为空（源数据只有标题）。
+
+## 对账补齐（2026-10-16 22:10）
+- 03 新闻流河流图已做：monitor 接口加 river（来源计数 + 来源→话题流量），前端 River.tsx（来源字母 logo 列 → 彩色贝塞尔汇聚曲线 → 话题计数列 → 正在汇入轮播卡+骨架卡）。
+- 扫描阅读列补「跟随扫描/浏览新闻」双页签与「展开全部来源/展开全部话题」行（话题可直接点入聚焦）。
+- 04 热点观察换 HotWatch：排名行（名次色/热度/趋势/发声数）+ 底部五强标题条；无热点数据时仍为占位（数据依赖故事归组，等模型 Key）。
+- 日报页核查结论：框架 ReportPaper 本就是报纸体（报头图版、第 N 期、IssueDots、指标条=条要闻/个来源/一手/精选 + 约 X 分钟、头条/看点/分区/快讯），与原站结构一致，差的只是"还没有刊"（等 Key 出刊）。先前对照文档里"日报是分节列表"的说法不准确，以此为准。
+- 材料卡摘要：monitor feed 已改为 excerpt 优先、分析摘要（summary_zh）回退；推送快讯本身无摘要属源数据限制。

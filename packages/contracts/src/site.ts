@@ -486,12 +486,19 @@ export interface MonitorFeedItem {
   topics: string[];
 }
 
+/** One flow of the news river: how many collected articles run from a source into a topic. */
+export interface MonitorRiver {
+  sources: Array<{ id: string; name: string; kind: string; total: number }>;
+  flows: Array<{ source: string; topic: string; n: number }>;
+}
+
 /** The observatory deck's data: topic graph (topics + weighted co-occurrence pairs), the scan feed, totals. */
 export interface MonitorResponse {
   topics: MonitorTopic[];
   /** [slugA, slugB, weight] triples, strongest first, at most 300. */
   pairs: Array<[string, string, number]>;
   feed: { items: MonitorFeedItem[] };
+  river: MonitorRiver;
   stats: { sources: number; items: number; today: number };
   generatedAt: string;
 }

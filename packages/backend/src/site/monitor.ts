@@ -13,7 +13,7 @@ import { TAG_SYNONYMS } from "@aihot/industry/taxonomy";
 const FEED_LIMIT = 40;
 const SCAN_WINDOW = 3000;
 
-interface ArticleRow { id: string; title: string; source_id: string; discovered_at: Date; excerpt: string | null; atops: string[] }
+interface ArticleRow { id: string; title: string; source_id: string; discovered_at: Date; excerpt: string | null; atops: string[]; asum: string | null }
 interface SourceRow { id: string; name: string; kind: string; owner_entity_id: string | null }
 
 const monitor = cached(() => queryMonitor(new Date()), { freshMs: 60_000, maxStaleMs: 10 * 60_000 });
@@ -55,9 +55,9 @@ async function queryMonitor(now: Date): Promise<MonitorResponse> {
   const [sources, articles, totals] = await Promise.all([
     sql<SourceRow[]>`SELECT id, name, kind, owner_entity_id FROM sources WHERE enabled`,
     sql<ArticleRow[]>`
-      SELECT a.id, a.title, a.source_id, a.discovered_at, a.excerpt, coalesce(m.topics, '{}') AS atops
+      SELECT a.id, a.title, a.source_id, a.discovered_at, a.excerpt, an.summary_zh AS asum, coalesce(m.topics, '{}') AS atops
       FROM articles a
-      LEFT JOIN (SELECT DISTINCT ON (article_id) article_id, tags, subjects FROM analyses ORDER BY article_id, input_revision DESC) an ON an.article_id = a.id
+      LEFT JOIN (SELECT DISTINCT ON (article_id) article_id, tags, subjects, summary_zh FROM analyses ORDER BY article_id, input_revision DESC) an ON an.article_id = a.id
       LEFT JOIN LATERAL (
         SELECT ${topicMembership()} AS topics
         FROM (SELECT coalesce(an.tags, '{}') || coalesce((SELECT array_agg('entity:' || s) FROM unnest(coalesce(an.subjects, '{}')) AS s), '{}') AS tags,
@@ -73,12 +73,16 @@ async function queryMonitor(now: Date): Promise<MonitorResponse> {
   const matchers = TOPICS.map((t) => ({ topic: t, match: topicMatchers(t, sourcesByEntity) }));
   const counts = new Map<string, number>(TOPICS.map((t) => [t.slug, 0]));
   const pairCounts = new Map<string, number>();
+  const sourceCounts = new Map<string, number>();
+  const flowCounts = new Map<string, number>();
   const itemTopics = new Map<string, string[]>();
 
   for (const a of articles) {
     const src = sourceById.get(a.source_id);
     const hits = a.atops.length ? a.atops : matchers.filter((m) => m.match(a, src)).map((m) => m.topic.slug);
     itemTopics.set(a.id, hits);
+    sourceCounts.set(a.source_id, (sourceCounts.get(a.source_id) ?? 0) + 1);
+    for (const slug of hits) flowCounts.set(`${a.source_id}|${slug}`, (flowCounts.get(`${a.source_id}|${slug}`) ?? 0) + 1);
     for (const slug of hits) counts.set(slug, (counts.get(slug) ?? 0) + 1);
     for (let i = 0; i < hits.length; i++) for (let j = i + 1; j < hits.length; j++) {
       const key = hits[i]! < hits[j]! ? `${hits[i]}|${hits[j]}` : `${hits[j]}|${hits[i]}`;
@@ -97,7 +101,7 @@ async function queryMonitor(now: Date): Promise<MonitorResponse> {
     return {
       id: a.id,
       title: a.title,
-      summary: a.excerpt ? a.excerpt.slice(0, 160) : null,
+      summary: (a.excerpt ?? a.asum) ? (a.excerpt ?? a.asum)!.slice(0, 160) : null,
       source: src ? publicSourceName(src.name) : a.source_id,
       at: a.discovered_at.toISOString(),
       kind: src?.kind ?? "rss",
@@ -105,8 +109,19 @@ async function queryMonitor(now: Date): Promise<MonitorResponse> {
     };
   });
 
+  const riverSources = sources
+    .map((src) => ({ id: src.id, name: publicSourceName(src.name), kind: src.kind, total: sourceCounts.get(src.id) ?? 0 }))
+    .filter((src) => src.total > 0)
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 14);
+  const riverFlows = [...flowCounts.entries()]
+    .map(([key, n]) => { const [source, topic] = key.split("|"); return { source: source!, topic: topic!, n }; })
+    .sort((a, b) => b.n - a.n)
+    .slice(0, 80);
+
   return {
     topics: TOPICS.map((t) => ({ slug: t.slug, name: t.name, group: t.group, total: counts.get(t.slug) ?? 0 })),
+    river: { sources: riverSources, flows: riverFlows },
     pairs,
     feed: { items: feedItems },
     stats: { sources: sources.length, items: totals[0]?.items ?? articles.length, today: articles.filter((a) => a.discovered_at >= dayStart).length },
