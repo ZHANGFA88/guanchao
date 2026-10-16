@@ -92,26 +92,27 @@
   --gutter-l: max(16px, env(safe-area-inset-left));
   --gutter-r: max(16px, env(safe-area-inset-right));
   color-scheme: light;
-  --bg: #faf9f6;
-  --bg-sunk: #f3f3ef;
-  --bg-muted: #e9ede9;
-  --surface: #ffffff;
-  --surface-2: #fdfdfb;
-  --raised: #ffffff;
-  --sidebar: #fdfdfb;
-  --daybar: #f0f2ee;
-  --field: #eef1ed;
-  --ink: #202a30;
-  --ink-2: #303c42;
-  --ink-3: #59656b;
-  --ink-4: #657176;
-  --line: #dfe4e1;
-  --line-strong: #d1d9d5;
-  --line-soft: #e9ede9;
-  --accent: #176b75;
-  --accent-ink: #145f68;
-  --accent-soft: rgba(23, 107, 117, 0.08);
-  --accent-softer: rgba(23, 107, 117, 0.05);
+  /* Warm paper (the observatory skin): cream ground, ink-brown text, burnt-orange accent. */
+  --bg: #f7f2e8;
+  --bg-sunk: #efe8d8;
+  --bg-muted: #e9e0cb;
+  --surface: #fffdf9;
+  --surface-2: #fffefb;
+  --raised: #fffdf9;
+  --sidebar: #faf5ea;
+  --daybar: #f0e9da;
+  --field: #f1ead9;
+  --ink: #262019;
+  --ink-2: #3d362a;
+  --ink-3: #6f6450;
+  --ink-4: #8d8171;
+  --line: #e2d9c4;
+  --line-strong: #d5c9ab;
+  --line-soft: #ece4d0;
+  --accent: #bc5212;
+  --accent-ink: #a3440d;
+  --accent-soft: rgba(188, 82, 18, 0.09);
+  --accent-softer: rgba(188, 82, 18, 0.05);
   --accent-contrast: #ffffff;
   --note: #526f72;
   --hot: #b3402a;
@@ -578,3 +579,14 @@
 :root:not([data-theme="dark"]) body:has(.report-shell) {
   background: color-mix(in srgb, var(--bg) 60%, var(--surface));
 }
+
+/* Observatory deck motion (the home page's scan replay): one token family, like the rest of the site. */
+@keyframes obs-receive { 0% { opacity: 0; filter: blur(2px); transform: translateY(6px); } 100% { opacity: 1; filter: none; transform: none; } }
+@keyframes obs-log-in { 0% { opacity: 0; background: rgba(203, 138, 86, 0.14); transform: translateY(-6px); } 100% { opacity: 1; } }
+@keyframes obs-beacon { 50% { opacity: 0.45; box-shadow: 0 0 0 5px rgba(203, 138, 86, 0.1); } }
+@keyframes obs-rise { 0% { opacity: 0; transform: translateY(0.3em); } 100% { opacity: 1; transform: none; } }
+@keyframes obs-grow-y { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+.obs-receive { animation: obs-receive 0.5s cubic-bezier(0.25, 1, 0.5, 1) both; }
+.obs-log-in { animation: obs-log-in 0.5s cubic-bezier(0.25, 1, 0.5, 1) both; }
+.obs-beacon { animation: obs-beacon 2s ease-in-out infinite; }
+.obs-rise { animation: obs-rise 0.45s cubic-bezier(0.25, 1, 0.5, 1) both; display: inline-block; }
