@@ -13,8 +13,8 @@ import { TAG_SYNONYMS } from "@aihot/industry/taxonomy";
 const FEED_LIMIT = 40;
 const SCAN_WINDOW = 3000;
 
-interface ArticleRow { id: string; title: string; source_id: string; discovered_at: Date; excerpt: string | null; atops: string[]; asum: string | null }
-interface SourceRow { id: string; name: string; kind: string; owner_entity_id: string | null }
+interface ArticleRow { id: string; title: string; source_id: string; discovered_at: Date; excerpt: string | null; atops: string[]; asum: string | null; url: string | null }
+interface SourceRow { id: string; name: string; kind: string; owner_entity_id: string | null; icon_url: string | null }
 
 const monitor = cached(() => queryMonitor(new Date()), { freshMs: 60_000, maxStaleMs: 10 * 60_000 });
 
@@ -53,9 +53,9 @@ function topicMatchers(topic: Topic, sourcesByEntity: Map<string, string[]>): (a
 
 async function queryMonitor(now: Date): Promise<MonitorResponse> {
   const [sources, articles, totals] = await Promise.all([
-    sql<SourceRow[]>`SELECT id, name, kind, owner_entity_id FROM sources WHERE enabled`,
+    sql<SourceRow[]>`SELECT id, name, kind, owner_entity_id, icon_url FROM sources WHERE enabled`,
     sql<ArticleRow[]>`
-      SELECT a.id, a.title, a.source_id, a.discovered_at, a.excerpt, an.summary_zh AS asum, coalesce(m.topics, '{}') AS atops
+      SELECT a.id, a.title, a.source_id, a.discovered_at, a.excerpt, a.url, an.summary_zh AS asum, coalesce(m.topics, '{}') AS atops
       FROM articles a
       LEFT JOIN (SELECT DISTINCT ON (article_id) article_id, tags, subjects, summary_zh FROM analyses ORDER BY article_id, input_revision DESC) an ON an.article_id = a.id
       LEFT JOIN LATERAL (
@@ -106,11 +106,12 @@ async function queryMonitor(now: Date): Promise<MonitorResponse> {
       at: a.discovered_at.toISOString(),
       kind: src?.kind ?? "rss",
       topics: itemTopics.get(a.id) ?? [],
+      url: a.url ?? null,
     };
   });
 
   const riverSources = sources
-    .map((src) => ({ id: src.id, name: publicSourceName(src.name), kind: src.kind, total: sourceCounts.get(src.id) ?? 0 }))
+    .map((src) => ({ id: src.id, name: publicSourceName(src.name), kind: src.kind, total: sourceCounts.get(src.id) ?? 0, iconUrl: src.icon_url ?? null }))
     .filter((src) => src.total > 0)
     .sort((a, b) => b.total - a.total)
     .slice(0, 14);

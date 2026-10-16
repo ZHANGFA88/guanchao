@@ -91,12 +91,20 @@ export interface TimelineCard {
 export interface HotStripEntry {
   rank: number;
   title: string;
+  /** Story digest/summary from the publication read layer; "" when the story has none (the web renders no summary line then). */
+  summary: string;
   heat: number;
   trend: "up" | "down" | "flat" | "new" | "unknown";
   storyPublicId: string | null;
   itemId: string | null;
   participants: HotParticipant[];
   participantCount: number;
+  /** Hourly heat behind the story (oldest → newest), null where the hour has no reading. */
+  spark: (number | null)[] | null;
+  /** ISO time of the newest spark slot; tick labels count back from here. */
+  sparkAnchor: string | null;
+  /** Reports grouped into the story. */
+  sourceCount: number;
 }
 
 export interface TimelineFilters {
@@ -484,11 +492,13 @@ export interface MonitorFeedItem {
   at: string;
   kind: string;
   topics: string[];
+  /** The original article URL for the "原文" link. */
+  url: string | null;
 }
 
 /** One flow of the news river: how many collected articles run from a source into a topic. */
 export interface MonitorRiver {
-  sources: Array<{ id: string; name: string; kind: string; total: number }>;
+  sources: Array<{ id: string; name: string; kind: string; total: number; iconUrl: string | null }>;
   flows: Array<{ source: string; topic: string; n: number }>;
 }
 

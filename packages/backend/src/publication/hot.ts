@@ -7,6 +7,7 @@ import { storedHotRanking, tierRank, type HotEntry, type HotRanking } from "../e
 import { cached, cachedByKey, SHARED_ONLY } from "../lib/cache.ts";
 import { proxiedImage, proxiedImageSet } from "../media/imgproxy.ts";
 import { publicSourceName } from "./rules.ts";
+import { sparklines } from "./stories.ts";
 import { evidenceCondition, listedCondition } from "./scope.ts";
 import { storyTexts } from "./story-text.ts";
 
@@ -113,15 +114,22 @@ export async function rankingExtras(ranking: HotRanking) {
 export async function loadHotStrip(): Promise<HotStripEntry[] | null> {
   const ranking = await latestHotRanking();
   if (!ranking || ranking.entries.length < 3) return null;
+  const at = new Date(ranking.computedAt);
   const extras = await rankingExtras(ranking);
-  return ranking.entries.slice(0, 5).map((e) => ({
+  const top = ranking.entries.slice(0, 5);
+  const sparks = await sparklines(top.map((e) => e.storyId), at);
+  return top.map((e) => ({
     rank: e.rank,
     title: e.title,
+    summary: extras.text(e).summary ?? "",
     heat: e.heat,
     trend: e.trend,
     storyPublicId: e.storyPublicId,
     itemId: e.representativeItemId,
     participants: extras.participants(e),
     participantCount: e.participantCount,
+    spark: sparks.get(e.storyId) ?? null,
+    sparkAnchor: ranking.computedAt,
+    sourceCount: e.sourceCount,
   }));
 }
