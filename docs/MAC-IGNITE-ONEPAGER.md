@@ -1,6 +1,7 @@
 # Mac 点火一页纸（市况台）
 
 三步，约 10 分钟。详细版见 `docs/IGNITE.md`，模型说明见 `docs/PROVIDERS.md`。
+前置（先备齐，缺了看 `docs/IGNITE.md` 的「前置条件」）：**Docker Desktop 已安装并启动**（菜单栏鲸鱼图标稳定）、**Node.js LTS**、**git**。
 
 ## 1. 拿到代码
 
@@ -19,12 +20,18 @@ cd shikuang
 node scripts/init-env.ts        # 首次生成 .env
 ```
 
-打开 `.env`，确认这三行（百炼兼容模式）：
+打开 `.env`，**只需填一行**（生成的 .env 已按主力千问预置好地址、模型与关思考参数）：
+
+```bash
+LLM_API_KEY=<你的百炼 Key>
+```
+
+顺手核对这三行是预置值、没被改动过：
 
 ```bash
 LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
-LLM_API_KEY=<你的百炼 Key>
 LLM_MODEL=qwen-plus
+LLM_EXTRA_JSON={"enable_thinking":false}
 ```
 
 并确认 `COLLECT_ENABLED=true`、`MODEL_CALLS_ENABLED=true`。

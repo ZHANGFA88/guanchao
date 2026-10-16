@@ -71,7 +71,7 @@ EMBEDDING_MODEL=text-embedding-3-small
 git clone https://github.com/ZHANGFA88/shikuang.git
 cd shikuang
 node scripts/init-env.ts --llm-key <你的模型 API Key>   # 生成 .env（含管理员密码与随机密钥）
-# 若不用 DeepSeek：按上面预设改 .env 的 LLM_BASE_URL / LLM_MODEL / LLM_EXTRA_JSON
+# 默认已是千问（预设一）；换商才按上面预设改 .env 的 LLM_BASE_URL / LLM_MODEL / LLM_EXTRA_JSON
 docker compose up -d --build
 ```
 
