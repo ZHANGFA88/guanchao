@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""市况台 Scrapling 推送器：抓被机器人墙挡住的信源（南华早报 SCMP），把标题+链接+摘要推进 external 信源。
+"""市况台 Scrapling 推送器：抓被机器人墙挡住的信源（南华早报 SCMP、巴伦周刊），把标题+链接+摘要推进 external 信源。
 
 为什么需要它：SCMP 的 RSS 对普通请求返回 403（Cloudflare 指纹墙），框架自带的 RSS 采集器过不去。
 Scrapling 的 StealthyFetcher 用真实浏览器指纹（Camoufox）打开页面，能像真人浏览器一样拿到 feed。
@@ -26,6 +26,7 @@ ROOT = Path(__file__).resolve().parent.parent
 FEEDS = [
     ("push-scmp-business", "南华早报 SCMP 商业", "https://www.scmp.com/rss/91/feed"),
     ("push-scmp-hk", "南华早报 SCMP 香港", "https://www.scmp.com/rss/5/feed"),
+    ("push-barrons", "巴伦周刊 Barron's", "https://feeds.a.dj.com/rss/BarronBusiness.xml"),
 ]
 
 

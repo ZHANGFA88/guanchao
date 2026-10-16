@@ -2,7 +2,7 @@
 
 南华早报（SCMP）的 RSS 对普通请求一律 403——它挡的是机器人指纹，不是内容本身。框架的 RSS 采集器过不去，所以这两个源改走「隐身浏览器抓取 → 推送入库」：
 
-- 信源：`push-scmp-business`（商业）、`push-scmp-hk`（香港），类型 external。
+- 信源：`push-scmp-business`（商业）、`push-scmp-hk`（香港）、`push-barrons`（巴伦周刊，道指系同一道墙），类型 external。
 - 脚本：`scripts/push-scrapling.py`，用 [Scrapling](https://github.com/D4Vinci/Scrapling)（BSD-3）的 StealthyFetcher 以真实浏览器指纹打开 feed，只取标题、链接、时间、摘要（与 RSS 订阅等价，不抓正文），经 `/api/ingest/items` 入库，与财经快讯推送器同一条路。
 
 ## 在 Mac 上启用（一次性）
