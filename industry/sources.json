@@ -1,215 +1,432 @@
 {
- "$comment": "市况台信源：首次启动时导入（scripts/seed.ts），已存在的不会被覆盖。之后在后台“信源”里新建、修改和暂停。",
- "sources": [
-  {
-   "id": "rss-fed-press",
-   "name": "美联储新闻稿",
-   "kind": "rss",
-   "config": {
-    "feedUrl": "https://www.federalreserve.gov/feeds/press_all.xml",
-    "_aihot": {
-     "initialBackfillLimit": 8
+  "$comment": "市况台信源：首次启动时导入（scripts/seed.ts），已存在的不会被覆盖。之后在后台“信源”里新建、修改和暂停。",
+  "sources": [
+    {
+      "id": "rss-fed-press",
+      "name": "美联储新闻稿",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://www.federalreserve.gov/feeds/press_all.xml",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T1",
+      "owner_entity_id": "fed",
+      "participation_mode": "editorial",
+      "interval_minutes": 120,
+      "tags": [
+        "官方"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-sec-press",
+      "name": "美国证监会 SEC 新闻稿",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://www.sec.gov/news/pressreleases.rss",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T1",
+      "owner_entity_id": "sec",
+      "participation_mode": "editorial",
+      "interval_minutes": 180,
+      "tags": [
+        "官方"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-ecb-press",
+      "name": "欧洲央行新闻稿",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://www.ecb.europa.eu/rss/press.html",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T1",
+      "owner_entity_id": "ecb",
+      "participation_mode": "editorial",
+      "interval_minutes": 180,
+      "tags": [
+        "官方"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-36kr",
+      "name": "36氪",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://36kr.com/feed",
+        "_aihot": {
+          "initialBackfillLimit": 10
+        }
+      },
+      "tier": "T2",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 60,
+      "tags": [
+        "媒体"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-nyt-business",
+      "name": "纽约时报商业",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://rss.nytimes.com/services/xml/rss/nyt/Business.xml",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T2",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 120,
+      "tags": [
+        "媒体"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "push-finflash",
+      "name": "财经快讯（本地推送）",
+      "kind": "external",
+      "config": {},
+      "tier": "T2",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 60,
+      "tags": [
+        "快讯"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "push-aisafety",
+      "name": "AI 安全日报（AISafetyHot 推送）",
+      "kind": "external",
+      "config": {},
+      "tier": "T2",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 240,
+      "tags": [
+        "AI安全"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-yahoo-us",
+      "name": "Yahoo Finance · 美股指数",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://feeds.finance.yahoo.com/rss/2.0/headline?s=%5EDJI,%5EGSPC,%5EIXIC",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T2",
+      "owner_entity_id": "",
+      "participation_mode": "editorial",
+      "interval_minutes": 30,
+      "tags": [
+        "美股"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-yahoo-hk",
+      "name": "Yahoo Finance · 恒生指数",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://feeds.finance.yahoo.com/rss/2.0/headline?s=%5EHSI",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T2",
+      "owner_entity_id": "",
+      "participation_mode": "editorial",
+      "interval_minutes": 30,
+      "tags": [
+        "港股"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-marketwatch",
+      "name": "MarketWatch · 头条",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://feeds.content.dowjones.io/public/rss/mw_topstories",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T2",
+      "owner_entity_id": "",
+      "participation_mode": "editorial",
+      "interval_minutes": 30,
+      "tags": [
+        "美股"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-gnews-hk",
+      "name": "Google News · 港股聚合",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://news.google.com/rss/search?q=%E6%B8%AF%E8%82%A1+%E6%81%92%E7%94%9F%E6%8C%87%E6%95%B8&hl=zh-HK&gl=HK&ceid=HK:zh-Hant",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T2",
+      "owner_entity_id": "",
+      "participation_mode": "editorial",
+      "interval_minutes": 60,
+      "tags": [
+        "港股"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-bloomberg-markets",
+      "name": "彭博社 Bloomberg",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://feeds.bloomberg.com/markets/news.rss",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T1",
+      "participation_mode": "editorial",
+      "interval_minutes": 30,
+      "tags": [],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-cnbc-top",
+      "name": "CNBC 头条",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://www.cnbc.com/id/100003114/device/rss/rss.html",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T1",
+      "participation_mode": "editorial",
+      "interval_minutes": 30,
+      "tags": [],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-cnbc-finance",
+      "name": "CNBC 财经",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://www.cnbc.com/id/10000664/device/rss/rss.html",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T1",
+      "participation_mode": "editorial",
+      "interval_minutes": 30,
+      "tags": [],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-wsj-markets",
+      "name": "华尔街日报 WSJ",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://feeds.a.dj.com/rss/RSSMarketsMain.xml",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T1",
+      "participation_mode": "editorial",
+      "interval_minutes": 45,
+      "tags": [],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-bbc-business",
+      "name": "BBC 商业",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "http://feeds.bbci.co.uk/news/business/rss.xml",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T2",
+      "participation_mode": "editorial",
+      "interval_minutes": 45,
+      "tags": [],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-guardian-business",
+      "name": "卫报商业",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://www.theguardian.com/uk/business/rss",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T2",
+      "participation_mode": "editorial",
+      "interval_minutes": 60,
+      "tags": [],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-nikkei-asia",
+      "name": "日经亚洲 Nikkei",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://asia.nikkei.com/rss/feed/nar",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T2",
+      "participation_mode": "editorial",
+      "interval_minutes": 45,
+      "tags": [],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-investing",
+      "name": "英为财情 Investing",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://www.investing.com/rss/news.rss",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T2",
+      "participation_mode": "editorial",
+      "interval_minutes": 30,
+      "tags": [],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-rthk-finance",
+      "name": "香港电台财经",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://rthk.hk/rthk/news/rss/e_expressnews_efinance.xml",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T1",
+      "participation_mode": "editorial",
+      "interval_minutes": 30,
+      "tags": [],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-rthk-local",
+      "name": "香港电台本地",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://rthk.hk/rthk/news/rss/c_expressnews_clocal.xml",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T2",
+      "participation_mode": "editorial",
+      "interval_minutes": 45,
+      "tags": [],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "rss-rthk-gc",
+      "name": "香港电台大中华",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://rthk.hk/rthk/news/rss/c_expressnews_greaterchina.xml",
+        "_aihot": {
+          "initialBackfillLimit": 8
+        }
+      },
+      "tier": "T2",
+      "participation_mode": "editorial",
+      "interval_minutes": 60,
+      "tags": [],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "push-scmp-business",
+      "name": "南华早报 SCMP 商业",
+      "kind": "external",
+      "config": {},
+      "tier": "T1",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 30,
+      "tags": [
+        "香港"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
+    },
+    {
+      "id": "push-scmp-hk",
+      "name": "南华早报 SCMP 香港",
+      "kind": "external",
+      "config": {},
+      "tier": "T1",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 30,
+      "tags": [
+        "香港"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false
     }
-   },
-   "tier": "T1",
-   "owner_entity_id": "fed",
-   "participation_mode": "editorial",
-   "interval_minutes": 120,
-   "tags": [
-    "官方"
-   ],
-   "site_fulltext": false,
-   "syndicate_fulltext": false
-  },
-  {
-   "id": "rss-sec-press",
-   "name": "美国证监会 SEC 新闻稿",
-   "kind": "rss",
-   "config": {
-    "feedUrl": "https://www.sec.gov/news/pressreleases.rss",
-    "_aihot": {
-     "initialBackfillLimit": 8
-    }
-   },
-   "tier": "T1",
-   "owner_entity_id": "sec",
-   "participation_mode": "editorial",
-   "interval_minutes": 180,
-   "tags": [
-    "官方"
-   ],
-   "site_fulltext": false,
-   "syndicate_fulltext": false
-  },
-  {
-   "id": "rss-ecb-press",
-   "name": "欧洲央行新闻稿",
-   "kind": "rss",
-   "config": {
-    "feedUrl": "https://www.ecb.europa.eu/rss/press.html",
-    "_aihot": {
-     "initialBackfillLimit": 8
-    }
-   },
-   "tier": "T1",
-   "owner_entity_id": "ecb",
-   "participation_mode": "editorial",
-   "interval_minutes": 180,
-   "tags": [
-    "官方"
-   ],
-   "site_fulltext": false,
-   "syndicate_fulltext": false
-  },
-  {
-   "id": "rss-36kr",
-   "name": "36氪",
-   "kind": "rss",
-   "config": {
-    "feedUrl": "https://36kr.com/feed",
-    "_aihot": {
-     "initialBackfillLimit": 10
-    }
-   },
-   "tier": "T2",
-   "owner_entity_id": null,
-   "participation_mode": "editorial",
-   "interval_minutes": 60,
-   "tags": [
-    "媒体"
-   ],
-   "site_fulltext": false,
-   "syndicate_fulltext": false
-  },
-  {
-   "id": "rss-nyt-business",
-   "name": "纽约时报商业",
-   "kind": "rss",
-   "config": {
-    "feedUrl": "https://rss.nytimes.com/services/xml/rss/nyt/Business.xml",
-    "_aihot": {
-     "initialBackfillLimit": 8
-    }
-   },
-   "tier": "T2",
-   "owner_entity_id": null,
-   "participation_mode": "editorial",
-   "interval_minutes": 120,
-   "tags": [
-    "媒体"
-   ],
-   "site_fulltext": false,
-   "syndicate_fulltext": false
-  },
-  {
-   "id": "push-finflash",
-   "name": "财经快讯（本地推送）",
-   "kind": "external",
-   "config": {},
-   "tier": "T2",
-   "owner_entity_id": null,
-   "participation_mode": "editorial",
-   "interval_minutes": 60,
-   "tags": [
-    "快讯"
-   ],
-   "site_fulltext": false,
-   "syndicate_fulltext": false
-  },
-  {
-   "id": "push-aisafety",
-   "name": "AI 安全日报（AISafetyHot 推送）",
-   "kind": "external",
-   "config": {},
-   "tier": "T2",
-   "owner_entity_id": null,
-   "participation_mode": "editorial",
-   "interval_minutes": 240,
-   "tags": [
-    "AI安全"
-   ],
-   "site_fulltext": false,
-   "syndicate_fulltext": false
-  },
-  {
-   "id": "rss-yahoo-us",
-   "name": "Yahoo Finance · 美股指数",
-   "kind": "rss",
-   "config": {
-    "feedUrl": "https://feeds.finance.yahoo.com/rss/2.0/headline?s=%5EDJI,%5EGSPC,%5EIXIC",
-    "_aihot": {
-     "initialBackfillLimit": 8
-    }
-   },
-   "tier": "T2",
-   "owner_entity_id": "",
-   "participation_mode": "editorial",
-   "interval_minutes": 30,
-   "tags": [
-    "美股"
-   ],
-   "site_fulltext": false,
-   "syndicate_fulltext": false
-  },
-  {
-   "id": "rss-yahoo-hk",
-   "name": "Yahoo Finance · 恒生指数",
-   "kind": "rss",
-   "config": {
-    "feedUrl": "https://feeds.finance.yahoo.com/rss/2.0/headline?s=%5EHSI",
-    "_aihot": {
-     "initialBackfillLimit": 8
-    }
-   },
-   "tier": "T2",
-   "owner_entity_id": "",
-   "participation_mode": "editorial",
-   "interval_minutes": 30,
-   "tags": [
-    "港股"
-   ],
-   "site_fulltext": false,
-   "syndicate_fulltext": false
-  },
-  {
-   "id": "rss-marketwatch",
-   "name": "MarketWatch · 头条",
-   "kind": "rss",
-   "config": {
-    "feedUrl": "https://feeds.content.dowjones.io/public/rss/mw_topstories",
-    "_aihot": {
-     "initialBackfillLimit": 8
-    }
-   },
-   "tier": "T2",
-   "owner_entity_id": "",
-   "participation_mode": "editorial",
-   "interval_minutes": 30,
-   "tags": [
-    "美股"
-   ],
-   "site_fulltext": false,
-   "syndicate_fulltext": false
-  },
-  {
-   "id": "rss-gnews-hk",
-   "name": "Google News · 港股聚合",
-   "kind": "rss",
-   "config": {
-    "feedUrl": "https://news.google.com/rss/search?q=%E6%B8%AF%E8%82%A1+%E6%81%92%E7%94%9F%E6%8C%87%E6%95%B8&hl=zh-HK&gl=HK&ceid=HK:zh-Hant",
-    "_aihot": {
-     "initialBackfillLimit": 8
-    }
-   },
-   "tier": "T2",
-   "owner_entity_id": "",
-   "participation_mode": "editorial",
-   "interval_minutes": 60,
-   "tags": [
-    "港股"
-   ],
-   "site_fulltext": false,
-   "syndicate_fulltext": false
-  }
- ]
+  ]
 }
