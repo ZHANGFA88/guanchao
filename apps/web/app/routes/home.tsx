@@ -1,6 +1,6 @@
 import { Link, redirect, useLoaderData } from "react-router";
 import type { Route } from "./+types/home";
-import type { TimelineResponse } from "@aihot/contracts/site";
+import type { MonitorResponse, TimelineResponse } from "@aihot/contracts/site";
 import { apiGet, cachedPage, loadOr404 } from "../lib/api.server";
 import { pageReuse } from "../lib/page-reuse";
 import { filterParams, hasFeedFilters, itemListLd, listPath, pageMeta, readFilters, siteLd } from "../lib/seo";
@@ -25,11 +25,13 @@ export async function loader({ request }: Route.LoaderArgs) {
   if (q && q.trim()) throw redirect(`/all${url.search}`);
   const filters = readFilters(url.searchParams);
   const upstream = new Headers();
-  const [data, today] = await Promise.all([
+  const [data, today, monitor] = await Promise.all([
     loadOr404<TimelineResponse>(listPath("/api/site/timeline", filterParams(filters)), { responseHeaders: upstream, signal: request.signal }),
     apiGet<{ collectedToday: number }>("/api/site/pool/today", { signal: request.signal }).catch(() => null),
+    // HotWatch's 公开材料/信源 stats come only from monitor (SPEC §2.5); null hides the line.
+    apiGet<MonitorResponse>("/api/site/monitor", { signal: request.signal }).catch(() => null),
   ]);
-  return cachedPage(60, { data, filters, collectedToday: today?.collectedToday ?? 0 }, upstream);
+  return cachedPage(60, { data, filters, collectedToday: today?.collectedToday ?? 0, hotStats: monitor?.stats ?? null }, upstream);
 }
 
 export function meta({ loaderData }: Route.MetaArgs) {
@@ -50,7 +52,7 @@ function SectionHead({ no, title, note, to, toLabel }: { no: string; title: stri
 }
 
 export default function Home() {
-  const { data, collectedToday } = useLoaderData<typeof loader>();
+  const { data, collectedToday, hotStats } = useLoaderData<typeof loader>();
   const moving = useMoving();
   return (
     <div className="pb-6">
@@ -90,13 +92,16 @@ export default function Home() {
       </section>
 
       <section className="mt-8">
-        <SectionHead no="04" title="热点观察" note="一个热点，多种声音" to="/hot" toLabel="全部热点" />
         {data.hot && inNav("/hot") ? (
-          <HotWatch entries={data.hot} />
+          // HotWatch renders the full §5 header row (04 title + tabs + stats + 全部热点).
+          <HotWatch entries={data.hot} stats={hotStats ? { items: hotStats.items, sources: hotStats.sources } : null} />
         ) : (
-          <p className="rounded-card border border-line bg-surface px-5 py-6 text-[13.5px] text-ink-3">
-            热点还在形成中——同一事件的报道积累到足够多时，这里会把它们聚成一个热点，附上各家声音。
-          </p>
+          <>
+            <SectionHead no="04" title="热点观察" note="一个热点，多种声音" to="/hot" toLabel="全部热点" />
+            <p className="rounded-card border border-line bg-surface px-5 py-6 text-[13.5px] text-ink-3">
+              热点还在形成中——同一事件的报道积累到足够多时，这里会把它们聚成一个热点，附上各家声音。
+            </p>
+          </>
         )}
       </section>
     </div>
