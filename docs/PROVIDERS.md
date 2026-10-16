@@ -1,4 +1,6 @@
-# 模型接口预设（GPT / Gemini / 千问 / DeepSeek 任选）
+# 模型接口预设（默认已定：主力千问 Qwen-Plus，备选 Gemini 2.5 Flash）
+
+> 2026-10-16 架构定版：主力 = 千问 Qwen-Plus（预设一）；仅当英文归纳质量明显不够时切 Gemini 2.5 Flash（预设二）。换商只改 `.env` 三行。
 
 本站的筛选、打分、写作、归组全部走**一个 OpenAI 兼容接口**，配置只在 `.env` 里：
 
@@ -13,27 +15,7 @@ MODEL_CALLS_ENABLED=true   # 这两个开关不设为 true，不采集、不调�
 
 换服务商 = 改上面四行后重启（Docker：`docker compose up -d`；直跑：重启 api/worker 两个进程）。不需要改任何代码。每一步（预筛/评分/写作/归组/翻译）想用不同模型时，在 `site/models.ts` 里单独指定，不改也行——默认全用 `.env` 这一个。
 
-## 预设一：OpenAI（GPT）
-
-```bash
-LLM_BASE_URL=https://api.openai.com/v1
-LLM_MODEL=gpt-4o-mini
-LLM_EXTRA_JSON={}
-```
-
-量大或想要更强判断时把模型换成 `gpt-5` 系列同名替换即可。
-
-## 预设二：Google（Gemini，OpenAI 兼容端点）
-
-```bash
-LLM_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/
-LLM_MODEL=gemini-2.5-flash
-LLM_EXTRA_JSON={}
-```
-
-Key 在 Google AI Studio 申请（与 Gemini API 同一个 Key）。
-
-## 预设三：千问（阿里云百炼，兼容模式）
+## 预设一：千问（阿里云百炼，兼容模式）【主力 · 默认】
 
 ```bash
 LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
@@ -43,7 +25,27 @@ LLM_EXTRA_JSON={"enable_thinking":false}
 
 也可以用框架示例的 `qwen3.8-flash`。关思考是为了省输出额度；用推理模型时另设 `LLM_REASONING_TOKENS=4000`。
 
-## 预设四：DeepSeek（框架默认）
+## 预设二：Google（Gemini，OpenAI 兼容端点）【备选：英文归纳明显不够时切换】
+
+```bash
+LLM_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/
+LLM_MODEL=gemini-2.5-flash
+LLM_EXTRA_JSON={}
+```
+
+Key 在 Google AI Studio 申请（与 Gemini API 同一个 Key）。
+
+## 预设三：OpenAI（GPT）
+
+```bash
+LLM_BASE_URL=https://api.openai.com/v1
+LLM_MODEL=gpt-4o-mini
+LLM_EXTRA_JSON={}
+```
+
+量大或想要更强判断时把模型换成 `gpt-5` 系列同名替换即可。
+
+## 预设四：DeepSeek
 
 ```bash
 LLM_BASE_URL=https://api.deepseek.com/v1
