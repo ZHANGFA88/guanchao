@@ -13,6 +13,7 @@ import { hotSearchLinks, loadHotStrip } from "@aihot/backend/publication/hot";
 import { loadChangelog, siteMeta } from "@aihot/backend/site/meta";
 import { loadContact, loadMakerAvatar } from "@aihot/backend/site/contact";
 import { loadSiteStats } from "@aihot/backend/site/stats";
+import { loadCollectedToday, loadMonitor } from "@aihot/backend/site/monitor";
 import { itemAvailability } from "@aihot/backend/publication/availability";
 import { listTopicSummaries, loadTopicPage, topicBrowseLinks } from "@aihot/backend/publication/topics";
 import { registerFeedback } from "./feedback.ts";
@@ -82,6 +83,15 @@ export function registerSite(app: FastifyInstance) {
     const search = q.q?.trim() ? q.q.trim().slice(0, 200) : null;
     const tab = q.tab === "relevance" ? "relevance" : "time";
     return sendJsonWithEtag(req, reply, await loadPool({ ...filters, q: search, tab, page }), { etagPrefix: "pool", cacheControl: "public, max-age=60, s-maxage=60" });
+  }));
+
+  app.get("/api/site/monitor", siteHandler(async (req, reply) => {
+    return sendJsonWithEtag(req, reply, await loadMonitor(), { etagPrefix: "monitor", cacheControl: "public, max-age=60, s-maxage=60" });
+  }));
+
+  app.get("/api/site/pool/today", siteHandler(async (req, reply) => {
+    const body = await loadCollectedToday();
+    return reply.header("Cache-Control", "no-store").send(body);
   }));
 
   app.get("/api/site/items/:id", siteHandler(async (req, reply) => {
