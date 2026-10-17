@@ -16,6 +16,7 @@ import { PhoneBar } from "../components/shell/PhoneBar";
 import { isPhone, type Screen } from "../components/shell/screens";
 import { openSearch } from "../features/search/SearchOverlay";
 import { addRecentSearch } from "../lib/local-state";
+import { displayTitle } from "../lib/display-text";
 
 export const handle: Screen = { tab: "featured", name: "全部" };
 export { pageHeaders as headers } from "../lib/api.server";
@@ -51,7 +52,7 @@ export function meta({ loaderData }: Route.MetaArgs) {
     description: `${SITE.name} 收录的${subjectAfter("全部", "相关动态")}，可按频道、类别与标签筛选，支持中英文搜索。`,
     path,
     noindex,
-    jsonLd: noindex ? undefined : itemListLd(path, title, loaderData?.data.items.map((i) => i.title) ?? []),
+    jsonLd: noindex ? undefined : itemListLd(path, title, loaderData?.data.items.map((i) => displayTitle(i)) ?? []),
   });
 }
 

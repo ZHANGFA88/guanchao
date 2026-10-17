@@ -9,6 +9,7 @@ import { pageReuse } from "../lib/page-reuse";
 import { breadcrumbLd, pageMeta, storyLd, titled } from "../lib/seo";
 import { beijingDate, beijingTime } from "@aihot/contracts/time";
 import { monthDay, monthDayTime, relativeTime } from "../lib/format";
+import { displaySummary, displayTitle } from "../lib/display-text";
 import { HeatChart } from "../features/story/HeatChart";
 import { sessionCache } from "../lib/session-cache";
 import { isReload } from "../lib/restore";
@@ -156,12 +157,12 @@ function TimelineRow({ r }: { r: StoryReportView }) {
           {r.selected && <SelectedBadge />}
         </div>
         <IntentLink viewTransition to={`/items/${r.id}`} className="mt-1 block text-[16px] font-[650] leading-[1.6] text-ink transition-colors hover:text-accent lg:text-[15.5px]">
-          {r.title}
+          {displayTitle(r)}
         </IntentLink>
-        {r.summary && (
+        {displaySummary(r) && (
           <>
             <p ref={ref} className={`mt-1 text-[14px] leading-[1.75] text-ink-3 ${open ? "" : "line-clamp-2"}`}>
-              {r.summary}
+              {displaySummary(r)}
             </p>
             {(clamped || open) && (
               <button type="button" onClick={() => setOpen(!open)} aria-expanded={open} className="mt-1 text-[12.5px] text-note transition-colors hover:text-accent">
@@ -338,7 +339,7 @@ export default function StoryPage() {
                       {d.title}
                     </Link>
                     <div className="mt-0.5 truncate text-[12.5px] text-ink-4">
-                      {d.representative.source.name}：{d.representative.title}
+                      {d.representative.source.name}：{displayTitle(d.representative)}
                     </div>
                   </li>
                 ))}
@@ -443,7 +444,7 @@ export default function StoryPage() {
                   <li key={r.id} className="py-3">
                     <div className="truncate text-[11.5px] text-ink-4">{r.source.name}</div>
                     <Link viewTransition to={`/items/${r.id}`} className="group mt-1 block text-[13.5px] font-semibold leading-[1.6] text-ink transition-colors hover:text-accent">
-                      {r.title}
+                      {displayTitle(r)}
                       <IconChevronRight size={13} className="ml-0.5 inline -translate-y-px text-ink-4 transition-transform group-hover:translate-x-0.5" />
                     </Link>
                   </li>

@@ -4,6 +4,7 @@ import type { MonitorResponse, TimelineResponse } from "@aihot/contracts/site";
 import { apiGet, cachedPage, loadOr404 } from "../lib/api.server";
 import { pageReuse } from "../lib/page-reuse";
 import { filterParams, hasFeedFilters, itemListLd, listPath, pageMeta, readFilters, siteLd } from "../lib/seo";
+import { displayTitle } from "../lib/display-text";
 import { inNav } from "../components/shell/nav";
 import type { Screen } from "../components/shell/screens";
 import { Timeline } from "../features/feed/Timeline";
@@ -36,7 +37,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 export function meta({ loaderData }: Route.MetaArgs) {
   const path = listPath("/", loaderData ? filterParams(loaderData.filters) : {});
-  const titles = loaderData?.data.cards.map((c) => c.item.title) ?? [];
+  const titles = loaderData?.data.cards.map((c) => displayTitle(c.item)) ?? [];
   return pageMeta({ path, noindex: hasFeedFilters(loaderData?.filters), jsonLd: path === "/" ? [...siteLd(), itemListLd("/", "精选", titles)] : undefined });
 }
 

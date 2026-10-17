@@ -7,6 +7,7 @@ import { cachedPage, loadOr404 } from "../lib/api.server";
 import { pageReuse } from "../lib/page-reuse";
 import { articleLd, breadcrumbLd, pageMeta, siteUrl, titled } from "../lib/seo";
 import { fullDateTime, relativeTime } from "../lib/format";
+import { displaySummary, displayTitle } from "../lib/display-text";
 import { markRead } from "../lib/local-state";
 import { SameEventBadge, SelectedBadge } from "../components/ui/Badge";
 import { ScoreLabel, shownScore } from "../components/ui/Score";
@@ -55,20 +56,20 @@ clientLoader.hydrate = true as const;
 export function meta({ loaderData }: Route.MetaArgs) {
   if (!loaderData) return [{ title: titled("内容不存在") }, { name: "robots", content: "noindex" }];
   const { item } = loaderData;
-  if (!item) return [{ title: titled(loaderData.preview.title) }];
+  if (!item) return [{ title: titled(displayTitle(loaderData.preview)) }];
   return pageMeta({
-    title: item.title,
-    description: item.summary ?? undefined,
+    title: displayTitle(item),
+    description: displaySummary(item) ?? undefined,
     path: `/items/${item.id}`,
     image: `/og/items/${item.id}.png`,
     type: "article",
     noindex: !item.indexable,
     jsonLd: [
-      articleLd({ path: `/items/${item.id}`, headline: item.title, description: item.summary, publishedAt: item.publishedAt, image: `/og/items/${item.id}.png`, basedOn: item.links.original }),
+      articleLd({ path: `/items/${item.id}`, headline: displayTitle(item), description: displaySummary(item), publishedAt: item.publishedAt, image: `/og/items/${item.id}.png`, basedOn: item.links.original }),
       breadcrumbLd([
         { name: SITE.name, path: "/" },
         { name: item.selected ? "精选" : "全部动态", path: item.selected ? "/" : "/all" },
-        { name: item.title, path: `/items/${item.id}` },
+        { name: displayTitle(item), path: `/items/${item.id}` },
       ]),
     ],
   });
@@ -180,14 +181,15 @@ function hostOf(url: string): string {
   }
 }
 
-async function shareOrCopy(item: Pick<SiteItemDetail, "id" | "title">): Promise<"shared" | "copied" | null> {
+async function shareOrCopy(item: Pick<SiteItemDetail, "id" | "title" | "titleZh">): Promise<"shared" | "copied" | null> {
   const url = `${siteUrl()}/items/${item.id}`;
+  const title = displayTitle(item);
   try {
     if (navigator.share && matchMedia("(pointer: coarse)").matches) {
-      await navigator.share({ title: item.title, url });
+      await navigator.share({ title, url });
       return "shared";
     }
-    await navigator.clipboard.writeText(`${item.title}\n${url}`);
+    await navigator.clipboard.writeText(`${title}\n${url}`);
     return "copied";
   } catch {
     return null;
@@ -234,7 +236,7 @@ function ItemPreview({ preview }: { preview: FeedItemSummary }) {
   const shownAt = preview.publishedAt ?? preview.timelineAt;
   return (
     <div className="mx-auto max-w-[var(--page-max-reading)] pb-8">
-      <PhoneBar back={{ to: preview.selected ? "/" : "/all", label: preview.selected ? "精选" : "全部" }} title={isX ? preview.x!.authorName : preview.title} />
+      <PhoneBar back={{ to: preview.selected ? "/" : "/all", label: preview.selected ? "精选" : "全部" }} title={isX ? preview.x!.authorName : displayTitle(preview)} />
       <article className="pb-6 pt-3" aria-busy="true">
         <div className="mb-3 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[13px] text-ink-3">
           <span className="font-semibold text-ink-2">{isX ? preview.x!.authorName : preview.source.name}</span>
@@ -249,11 +251,11 @@ function ItemPreview({ preview }: { preview: FeedItemSummary }) {
             </span>
           )}
         </div>
-        {!isX && <h1 data-page-title="" className="text-[26px] font-bold leading-[1.38] tracking-[-0.01em] text-ink">{preview.title}</h1>}
-        {preview.summary && (
+        {!isX && <h1 data-page-title="" className="text-[26px] font-bold leading-[1.38] tracking-[-0.01em] text-ink">{displayTitle(preview)}</h1>}
+        {displaySummary(preview) && (
           <section className={isX ? "mt-4" : "mt-7"}>
-            <div className="mb-2 text-[12px] font-semibold text-accent">{isX && preview.summary.replace(/\s+/g, " ").trim() === preview.title ? "原文" : "AI 导读"}</div>
-            <p className="text-[18px] leading-[1.7] text-ink">{preview.summary}</p>
+            <div className="mb-2 text-[12px] font-semibold text-accent">{isX && displaySummary(preview)!.replace(/\s+/g, " ").trim() === displayTitle(preview) ? "原文" : "AI 导读"}</div>
+            <p className="text-[18px] leading-[1.7] text-ink">{displaySummary(preview)}</p>
           </section>
         )}
         {preview.reason && (
@@ -305,6 +307,9 @@ function ItemView({ item }: { item: SiteItemDetail }) {
   const navigate = useNavigate();
   const hasTranslation = item.hasTranslation;
   const lang = item.bodyLanguage;
+  // SPEC-TRANSLATION §6: every rendered headline/summary on this page goes through these.
+  const dt = displayTitle(item);
+  const ds = displaySummary(item);
   const [posterRequested, setPosterRequested] = useState(false);
   const [posterOpen, setPosterOpen] = useState(false);
   const [outlineOpen, setOutlineOpen] = useState(false);
@@ -471,7 +476,7 @@ function ItemView({ item }: { item: SiteItemDetail }) {
       {/* Phones: back to where the reader came from, the title once it has scrolled away, more actions. */}
       <PhoneBar
         back={{ to: item.selected ? "/" : "/all", label: item.selected ? "精选" : "全部" }}
-        title={isX ? item.x!.authorName : item.title}
+        title={isX ? item.x!.authorName : dt}
         actions={
           <BarButton label="更多操作" onClick={() => setActionsOpen(true)}>
             <IconMore size={22} />
@@ -518,13 +523,13 @@ function ItemView({ item }: { item: SiteItemDetail }) {
               </span>
             )}
           </div>
-          {!isX && <h1 data-page-title="" className="text-[26px] font-bold leading-[1.38] tracking-[-0.01em] text-ink lg:text-[32px] lg:leading-[1.34] xl:text-[36px] xl:leading-[1.3]">{item.title}</h1>}
+          {!isX && <h1 data-page-title="" className="text-[26px] font-bold leading-[1.38] tracking-[-0.01em] text-ink lg:text-[32px] lg:leading-[1.34] xl:text-[36px] xl:leading-[1.3]">{dt}</h1>}
           {!isX && item.originalTitle && <p className="mt-2.5 text-[14px] leading-relaxed text-ink-4">{item.originalTitle}</p>}
 
-          {item.summary && (!isX || item.summary.replace(/\s+/g, " ").trim() !== item.title) && (
+          {ds && (!isX || ds.replace(/\s+/g, " ").trim() !== dt) && (
             <section className={isX ? "mt-4" : "mt-7 xl:mt-8"}>
               <div className="mb-2 text-[12px] font-semibold text-accent">{summaryOnly ? "摘要" : "AI 导读"}</div>
-              <p className="text-[18px] leading-[1.7] text-ink xl:text-[20px] xl:leading-[1.7]">{item.summary}</p>
+              <p className="text-[18px] leading-[1.7] text-ink xl:text-[20px] xl:leading-[1.7]">{ds}</p>
             </section>
           )}
 
@@ -634,7 +639,7 @@ function ItemView({ item }: { item: SiteItemDetail }) {
 
       {posterRequested && (
         <Suspense fallback={null}>
-          <PosterSheet id={item.id} title={item.title} open={posterOpen} onClose={closePoster} />
+          <PosterSheet id={item.id} title={dt} open={posterOpen} onClose={closePoster} />
         </Suspense>
       )}
       <Toast text={toast} />
