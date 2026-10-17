@@ -32,3 +32,24 @@ test("a paused external source rejects pushed items without recording a successf
   await sql`UPDATE sources SET enabled = true WHERE id = ${sourceId}`;
   assert.deepEqual(await ingestItems({ sourceId, items: [{ title: "New report", url: `https://example.org/${sourceId}` }] }), { ok: true, created: 1 });
 });
+
+test("an ingested item with summary stores it as the article excerpt", async () => {
+  const sourceId = `test-summary-ingest-${tag()}`;
+  const summary = "  市场监管总局 发布\n\n新规，涉及  平台经济 \t 反垄断。  ";
+  assert.deepEqual(
+    await ingestItems({ sourceId, items: [{ title: "Summary report", url: `https://example.org/${sourceId}/a`, summary }] }),
+    { ok: true, created: 1 },
+  );
+  const [row] = await sql<{ excerpt: string | null }[]>`SELECT excerpt FROM articles WHERE source_id = ${sourceId}`;
+  assert.equal(row!.excerpt, "市场监管总局 发布 新规，涉及 平台经济 反垄断。");
+});
+
+test("an ingested item without summary keeps a null excerpt", async () => {
+  const sourceId = `test-nosummary-ingest-${tag()}`;
+  assert.deepEqual(
+    await ingestItems({ sourceId, items: [{ title: "No summary report", url: `https://example.org/${sourceId}/b` }] }),
+    { ok: true, created: 1 },
+  );
+  const [row] = await sql<{ excerpt: string | null }[]>`SELECT excerpt FROM articles WHERE source_id = ${sourceId}`;
+  assert.equal(row!.excerpt, null);
+});

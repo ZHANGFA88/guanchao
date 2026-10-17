@@ -19,9 +19,17 @@ export class IngestError extends Error {
 interface ItemIn {
   title?: unknown;
   url?: unknown;
+  summary?: unknown;
   publishedAt?: unknown;
   author?: unknown;
   raw?: { _aihot?: { backfill?: boolean; baseline?: boolean } } & Record<string, unknown>;
+}
+
+/** Light-clean an externally reported summary into a storage-ready excerpt: fold whitespace, trim, empty → null. */
+export function cleanIngestExcerpt(summary: unknown): string | null {
+  if (typeof summary !== "string") return null;
+  const cleaned = summary.replace(/\s+/g, " ").trim();
+  return cleaned ? cleaned : null;
 }
 
 export async function ingestItems(body: { sourceId?: unknown; sourceName?: unknown; items?: unknown }): Promise<{ ok: true; created: number }> {
@@ -57,6 +65,7 @@ export async function ingestItems(body: { sourceId?: unknown; sourceName?: unkno
       url: rawUrl,
       title,
       author: typeof it.author === "string" ? it.author.slice(0, 200) : null,
+      excerpt: cleanIngestExcerpt(it.summary),
       publishedAt: published && Number.isFinite(published.getTime()) ? published : null,
       raw: it.raw ?? null,
       via: "ingest",
