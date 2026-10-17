@@ -457,6 +457,40 @@ def collect_cninfo() -> list[dict]:
     return items
 
 
+# ---------- YouTube 频道（AI 陪看 v1，2026-10-17 架构点批） ----------
+# 频道官方 RSS（Atom）。框架直采在受限网络下过不去 YouTube，走推送；标题入池后走既有翻译管线。
+YOUTUBE_CHANNELS = [
+    ("push-yt-bloomberg", "Bloomberg TV（YouTube）", "UCIALMKvObZNtJ6AmdCLP7Lg"),
+    ("push-yt-yahoo", "Yahoo Finance（YouTube）", "UCEAZeUIeJs0IjQiqTCdVSIg"),
+    ("push-yt-dw", "DW News（YouTube）", "UCknLrEdhRCp1aegoMqRaCZg"),
+]
+
+
+def parse_youtube_feed(xml_text: str) -> list[dict]:
+    """YouTube 频道 Atom：标题/观看链接/发布时间 + media:description 作摘要。"""
+    atom = {"a": "http://www.w3.org/2005/Atom", "m": "http://search.yahoo.com/mrss/"}
+    root = ET.fromstring(_extract_xml(xml_text))
+    items = []
+    for entry in root.findall("a:entry", atom):
+        title = _clean(entry.findtext("a:title", default="", namespaces=atom))
+        link = ""
+        for el in entry.findall("a:link", atom):
+            if el.get("rel") in (None, "alternate"):
+                link = el.get("href") or ""
+                break
+        published = (entry.findtext("a:published", default="", namespaces=atom) or "").strip()
+        if not title or not link or not published:
+            continue
+        desc = _clean(entry.findtext("a:group/m:description", default="", namespaces=atom) or
+                      entry.findtext("m:group/m:description", default="", namespaces=atom))
+        item = {"title": title[:200], "url": link,
+                "publishedAt": datetime.fromisoformat(published.replace("Z", "+00:00")).astimezone(timezone.utc).isoformat()}
+        if desc:
+            item["summary"] = desc[:300]
+        items.append(item)
+    return items
+
+
 # ---------- signal 解析 ----------
 def parse_hn() -> list[dict]:
     """HN 官方 Firebase 接口（免费免 Key）：头条里分数达标的才推，标题就是讨论帖标题。"""
@@ -640,6 +674,9 @@ def main() -> None:
     jobs.append(("push-sec-edgar", "SEC EDGAR 公司申报", collect_edgar))
     jobs.append(("push-hkexnews", "港交所披露易公告", collect_hkex))
     jobs.append(("push-cninfo", "巨潮资讯公告", collect_cninfo))
+    for yt_id, yt_name, yt_cid in YOUTUBE_CHANNELS:
+        jobs.append((yt_id, yt_name,
+                     lambda c=yt_cid: parse_youtube_feed(fetch_raw(f"https://www.youtube.com/feeds/videos.xml?channel_id={c}"))))
 
     if "--only" in sys.argv:
         keep = set(sys.argv[sys.argv.index("--only") + 1].split(","))

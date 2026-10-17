@@ -13,6 +13,7 @@ import { refreshSourceIcons } from "@aihot/backend/sources/icons";
 import { computeHotRanking, snapshotHeat } from "@aihot/backend/events/hot";
 import { linkRelatedStories } from "@aihot/backend/events/consolidate";
 import { composeDueReports } from "@aihot/backend/reports/compose";
+import { warmLiveBriefs } from "@aihot/backend/reports/live-brief";
 import { dailyRetention } from "@aihot/backend/operations/retention";
 import { submitIndexNow } from "@aihot/backend/operations/indexnow";
 import { checkAlerts, sendDigest } from "@aihot/backend/operations/alerts";
@@ -35,6 +36,10 @@ const ENGINE_SCHEDULES: Scheduled[] = [
   // Every issue that is due and not written yet, each from its edition time (site/site.ts EDITION_TIMES)
   // at the next half hour; a missed or failed one at the next run.
   { name: "reports.compose", cron: "0,30 * * * *", missed: "once", run: () => composeDueReports() },
+  // AI 陪看要点卡: warmup/backstop only — the card a reader sees is generated on demand at view
+  // time (jobs/live.ts). Offset from reports.compose (lowest model priority); every scope is
+  // watermark-gated, so warming a quiet period costs no model call.
+  { name: "live.brief", cron: "5,35 * * * *", run: () => warmLiveBriefs() },
   // The deletions the privacy notice promises, once their retention periods are over.
   { name: "ops.retention", cron: "30 3 * * *", missed: "once", run: () => dailyRetention() },
   // IndexNow for added, changed and removed discovery URLs (off unless INDEXNOW_SUBMIT_ENABLED).

@@ -19,6 +19,9 @@ import { listTopicSummaries, loadTopicPage, topicBrowseLinks } from "@aihot/back
 import { registerFeedback } from "./feedback.ts";
 import { loadHot, loadStoryDetail, resolveStory } from "@aihot/backend/publication/stories";
 import { listReports, loadReport, reportNavigation, loadReportNavigation, loadReportMonth, type ReportKind } from "@aihot/backend/publication/reports";
+import { liveBriefGenerationPending, loadLiveBriefCard } from "@aihot/backend/publication/live";
+import { LIVE_BRIEF_CACHE_TTL_MS, LIVE_CHANNELS, type LiveBriefScope } from "@aihot/backend/reports/live-brief";
+import { enqueue, QUEUES } from "@aihot/backend/jobs/queue";
 import { looseQuery, sendJsonWithEtag, sendProblem } from "../http/respond.ts";
 
 type Handler = (req: FastifyRequest, reply: FastifyReply) => Promise<unknown>;
@@ -163,6 +166,44 @@ export function registerSite(app: FastifyInstance) {
   app.get("/api/site/hot", siteHandler(async (req, reply) => {
     const data = await loadHot();
     return sendJsonWithEtag(req, reply, data, { etagPrefix: "hot", cacheControl: "public, max-age=30, s-maxage=30" });
+  }));
+
+  // AI 陪看要点卡: conclusions follow the viewing moment. A card younger than the cache TTL is
+  // reused; otherwise a worker generation job is enqueued (the model call runs in the worker,
+  // never here) and we wait briefly for the fresh card. If generation does not land in time, the
+  // latest stored card is served with its real generatedAt; with no card at all, a retryable 404.
+  app.get("/api/site/live-brief", siteHandler(async (req, reply) => {
+    const channelParam = looseQuery(req).channel;
+    let scope: LiveBriefScope = "all";
+    if (channelParam !== undefined) {
+      if (!(channelParam in LIVE_CHANNELS)) {
+        return sendProblem(req, reply, { status: 400, code: "bad_request", detail: `unknown channel: ${channelParam}`, cacheControl: "public, max-age=30" });
+      }
+      scope = channelParam as LiveBriefScope;
+    }
+    const startedAt = Date.now();
+    let card = await loadLiveBriefCard(scope);
+    const fresh = card !== null && startedAt - new Date(card.generatedAt).getTime() < LIVE_BRIEF_CACHE_TTL_MS;
+    if (!fresh) {
+      try {
+        await enqueue(QUEUES.liveBrief, { scope }, { singletonKey: `live-brief:${scope}` });
+      } catch (error) {
+        req.log.warn({ err: error }, "live brief enqueue failed");
+      }
+      // Poll for the worker's card; ~25 s covers a normal generation. Stop early when the job
+      // finished without a new card (no new inputs) and fall back to the stored one honestly.
+      while (Date.now() - startedAt < 25_000) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const next = await loadLiveBriefCard(scope);
+        if (next && new Date(next.generatedAt).getTime() >= startedAt - 1000) {
+          card = next;
+          break;
+        }
+        if (!(await liveBriefGenerationPending(scope))) break;
+      }
+    }
+    if (!card) return sendProblem(req, reply, { status: 404, code: "not_found", detail: "live brief is generating, retry shortly", cacheControl: "public, max-age=5" });
+    return sendJsonWithEtag(req, reply, card, { etagPrefix: `live-brief-${scope}`, cacheControl: "public, max-age=30, s-maxage=30" });
   }));
 
   app.get("/api/site/stories/:publicId", siteHandler(async (req, reply) => {

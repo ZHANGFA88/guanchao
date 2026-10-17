@@ -9,6 +9,7 @@
 | feed | RSS：普通请求优先拿原始字节；403/429 时依次升级 curl_cffi（chrome 指纹伪装）→ 隐身浏览器 → 动态渲染 | 南华早报 SCMP 商业/香港（Mac 上普通请求直连即通、各 50 条）、巴伦周刊（四路均 403，如实跳过） |
 | page | 无可用 RSS：隐身浏览器打开列表页/首页，按文章链接规律抽标题+链接 | 第一财经、财新网、每日经济新闻、证券时报、FT中文网、21世纪经济报道、经济观察报 |
 | api | 站点公开 JSON 接口：普通请求优先读原始 JSON | 华尔街见闻快讯、新浪财经7×24（框架 SSRF 拦其域名解析故走推送）、SEC EDGAR（browse-edgar Atom 三路合并，UA 用申报串 `GuanchaoBot/1.0 (+https://github.com/ZHANGFA88/shikuang)`，架构裁定不许编造邮箱）、港交所披露易（titleSearchServlet，result 为字符串化 JSON 需二次解包）、巨潮资讯（hisAnnouncement form POST，深沪两市；近 24h、每轮上限 200 条） |
+| feed（Atom） | YouTube 频道官方 RSS：框架直采过不去 YouTube 时走推送，解析器单独解 Atom entry | Bloomberg TV / Yahoo Finance / DW News 三频道（AI 陪看 v1 入料，标题入池后走既有翻译管线） |
 | signal | 免费讨论源，推给 `hot_signal` 信源（只供热点讨论证据、永不成条） | 东方财富股吧、雪球（patchright 首页预热种 xq_a_token cookie 后调 API）、Hacker News |
 
 抓取链（2026-10-17 Mac 两次干跑定版）：feed/api 普通请求优先（RSS XML 和 JSON 不能被浏览器包装成 HTML，否则解析全灭），403/429 时依次升级 curl_cffi（chrome 伪装）→ StealthyFetcher → DynamicFetcher；page 模式浏览器渲染优先；雪球走 patchright 首页预热种 `xq_a_token` cookie 后在同一上下文调 API。page 模式只搬标题与链接（与 RSS 订阅等价，不抓正文）；链接里带日期的源用链接日期作发布时间并只收最近 2–3 天，其余用抓取时刻近似。

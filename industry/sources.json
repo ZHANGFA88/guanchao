@@ -1168,6 +1168,57 @@
       "site_fulltext": false,
       "syndicate_fulltext": false,
       "icon_url": "https://www.google.com/s2/favicons?domain=cninfo.com.cn&sz=64"
+    },
+    {
+      "id": "push-yt-bloomberg",
+      "name": "Bloomberg TV（YouTube）",
+      "kind": "external",
+      "config": {},
+      "tier": "T1",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 30,
+      "tags": [
+        "视频",
+        "国际"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "icon_url": "https://www.google.com/s2/favicons?domain=youtube.com&sz=64"
+    },
+    {
+      "id": "push-yt-yahoo",
+      "name": "Yahoo Finance（YouTube）",
+      "kind": "external",
+      "config": {},
+      "tier": "T1",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 30,
+      "tags": [
+        "视频",
+        "美股"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "icon_url": "https://www.google.com/s2/favicons?domain=youtube.com&sz=64"
+    },
+    {
+      "id": "push-yt-dw",
+      "name": "DW News（YouTube）",
+      "kind": "external",
+      "config": {},
+      "tier": "T2",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 30,
+      "tags": [
+        "视频",
+        "国际"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "icon_url": "https://www.google.com/s2/favicons?domain=youtube.com&sz=64"
     }
   ]
 }
