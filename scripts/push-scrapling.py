@@ -9,7 +9,10 @@
   signal —— 免费讨论源（东方财富股吧、雪球、Hacker News）：推给 hot_signal 信源，只给热点供讨论证据，
            永不单独成条（框架 group 逻辑写死），是 X 付费讨论层的免费替代。
 
-抓取优先 Scrapling StealthyFetcher（真实浏览器指纹），失败回退 DynamicFetcher，再回退普通请求。
+抓取分工（2026-10-17 Mac 实证后定版）：
+  feed / api / signal 接口 —— 普通请求优先拿原始字节（RSS XML / JSON 不能被浏览器包装成 HTML），
+  失败或 403/429 时依次升级 curl_cffi（chrome 指纹伪装）→ StealthyFetcher → DynamicFetcher。
+  page（列表页） —— 浏览器渲染优先（StealthyFetcher → DynamicFetcher → 普通请求），现行链不动。
 服务端按 url 去重，可重复运行；建议每 30 分钟跑一次（见 docs/SCRAPLING.md）。
 
 用法（在观潮仓库根目录）：
@@ -23,6 +26,7 @@ import html as html_lib
 import json
 import re
 import sys
+import urllib.error
 import urllib.request
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
@@ -106,39 +110,110 @@ def read_token() -> str:
     sys.exit(1)
 
 
-def fetch_text(url: str) -> str:
-    """StealthyFetcher first (Camoufox, real fingerprint), then DynamicFetcher, then plain HTTP."""
-    try:
-        from scrapling.fetchers import StealthyFetcher
-
-        page = StealthyFetcher.fetch(url, headless=True, network_idle=True, timeout=60000)
-        if page.status == 200 and page.html_content:
-            return page.html_content
-        print(f"stealth {url} -> {page.status}", file=sys.stderr)
-    except Exception as e:  # noqa: BLE001
-        print(f"stealth unavailable/failed: {type(e).__name__}: {str(e)[:100]}", file=sys.stderr)
-    try:
-        from scrapling.fetchers import DynamicFetcher
-
-        page = DynamicFetcher.fetch(url, headless=True, network_idle=True, timeout=60000)
-        if page.status == 200 and page.html_content:
-            return page.html_content
-        print(f"dynamic {url} -> {page.status}", file=sys.stderr)
-    except Exception as e:  # noqa: BLE001
-        print(f"dynamic failed: {type(e).__name__}: {str(e)[:100]}", file=sys.stderr)
+def fetch_plain(url: str) -> str:
     req = urllib.request.Request(url, headers={"User-Agent": UA})
     with urllib.request.urlopen(req, timeout=30) as resp:
         return resp.read().decode("utf-8", errors="replace")
 
 
+def _plain_status(url: str) -> tuple[int | None, str]:
+    """普通请求：返回 (status, text)。HTTPError 也带回状态码，供升级链决策。"""
+    req = urllib.request.Request(url, headers={"User-Agent": UA})
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            return resp.status, resp.read().decode("utf-8", errors="replace")
+    except urllib.error.HTTPError as e:
+        return e.code, ""
+    except Exception as e:  # noqa: BLE001
+        print(f"plain {url} failed: {type(e).__name__}: {str(e)[:100]}", file=sys.stderr)
+        return None, ""
+
+
+def _impersonated(url: str) -> tuple[int | None, str]:
+    """curl_cffi chrome 伪装：返回原始字节，专治 TLS 指纹墙。"""
+    try:
+        from curl_cffi import requests as creq
+    except ImportError:
+        return None, ""
+    try:
+        r = creq.get(url, impersonate="chrome120", timeout=30,
+                     headers={"User-Agent": UA, "Referer": "https://www.google.com/"})
+        return r.status_code, r.text
+    except Exception as e:  # noqa: BLE001
+        print(f"impersonate {url} failed: {type(e).__name__}: {str(e)[:100]}", file=sys.stderr)
+        return None, ""
+
+
+def _rendered(url: str) -> str:
+    """浏览器渲染兜底。返回的可能是包装后的 HTML，解析端要有容错。"""
+    for name in ("StealthyFetcher", "DynamicFetcher"):
+        try:
+            mod = __import__("scrapling.fetchers", fromlist=[name])
+            page = getattr(mod, name).fetch(url, headless=True, network_idle=True, timeout=60000)
+            if page.status == 200 and page.html_content:
+                return page.html_content
+            print(f"{name.lower()} {url} -> {page.status}", file=sys.stderr)
+        except Exception as e:  # noqa: BLE001
+            print(f"{name.lower()} unavailable/failed: {type(e).__name__}: {str(e)[:100]}", file=sys.stderr)
+    raise RuntimeError(f"all fetch routes failed for {url}")
+
+
+def fetch_raw(url: str) -> str:
+    """feed / api / signal 接口类取数：普通请求拿原始字节优先；失败或 403/429 时依次升级
+    curl_cffi（chrome 伪装）→ StealthyFetcher → DynamicFetcher。返回的一定是原始文本。"""
+    status, text = _plain_status(url)
+    if status == 200 and text:
+        return text
+    if status is not None and status not in (403, 429):
+        raise RuntimeError(f"plain fetch failed: HTTP {status}")
+    status, text = _impersonated(url)
+    if status == 200 and text:
+        print(f"impersonate {url} -> 200", file=sys.stderr)
+        return text
+    return _rendered(url)
+
+
+def fetch_rendered(url: str) -> str:
+    """page 模式：浏览器渲染优先（现行链不动），最后回退普通请求。"""
+    for name in ("StealthyFetcher", "DynamicFetcher"):
+        try:
+            mod = __import__("scrapling.fetchers", fromlist=[name])
+            page = getattr(mod, name).fetch(url, headless=True, network_idle=True, timeout=60000)
+            if page.status == 200 and page.html_content:
+                return page.html_content
+            print(f"{name.lower()} {url} -> {page.status}", file=sys.stderr)
+        except Exception as e:  # noqa: BLE001
+            print(f"{name.lower()} unavailable/failed: {type(e).__name__}: {str(e)[:100]}", file=sys.stderr)
+    return fetch_plain(url)
+
+
 # ---------- feed 解析（与旧版一致） ----------
+def _extract_xml(text: str) -> str:
+    """剥掉 <rss>/<feed>/<?xml 之前的杂质，并截掉 </rss>/</feed> 之后的尾巴。
+    防浏览器渲染把 RSS 包成 HTML 文档后 ET 严格解析炸掉。"""
+    m = re.search(r"<(?:\?xml\b|rss\b|feed\b)", text)
+    if m:
+        text = text[m.start():]
+    for end in ("</rss>", "</feed>"):
+        i = text.rfind(end)
+        if i >= 0:
+            text = text[: i + len(end)]
+            break
+    return text
+
+
 def parse_feed(xml_text: str) -> list[dict]:
-    start = xml_text.find("<rss")
-    if start < 0:
-        start = xml_text.find("<feed")
-    if start >= 0:
-        xml_text = xml_text[start:]
-    root = ET.fromstring(xml_text)
+    xml_text = _extract_xml(xml_text)
+    try:
+        root = ET.fromstring(xml_text)
+    except ET.ParseError as first_err:
+        # 宽容重试：lxml recover（scrapling 的依赖，venv 里有）
+        try:
+            from lxml import etree as LET
+        except ImportError:
+            raise first_err
+        root = LET.fromstring(xml_text.encode("utf-8", "replace"),
+                              parser=LET.XMLParser(recover=True, huge_tree=True))
     items = []
     for node in root.iter("item"):
         title = (node.findtext("title") or "").strip()
@@ -240,12 +315,6 @@ def parse_wallstreetcn(raw: str) -> list[dict]:
     return items
 
 
-def fetch_plain(url: str) -> str:
-    req = urllib.request.Request(url, headers={"User-Agent": UA})
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        return resp.read().decode("utf-8", errors="replace")
-
-
 # ---------- signal 解析 ----------
 def parse_hn() -> list[dict]:
     """HN 官方 Firebase 接口（免费免 Key）：头条里分数达标的才推，标题就是讨论帖标题。"""
@@ -305,9 +374,53 @@ def parse_guba_board(page_html: str, code: str) -> list[dict]:
     return posts[:3]
 
 
+def fetch_xueqiu(url: str) -> str:
+    """雪球：patchright 无头打开首页种 cookie（xq_a_token），同一浏览器上下文里调 API 取 JSON。
+    patchright/浏览器不可用时回退普通取数链；取数失败如实报错（本轮该源跳过）。"""
+
+    def warmup() -> str:
+        from patchright.sync_api import sync_playwright
+
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            try:
+                ctx = browser.new_context(user_agent=UA)
+                pg = ctx.new_page()
+                pg.goto("https://xueqiu.com/", wait_until="domcontentloaded", timeout=60000)
+                pg.wait_for_timeout(4000)
+                if "xq_a_token" not in {c["name"] for c in ctx.cookies()}:
+                    print("xueqiu: xq_a_token not planted, retrying once", file=sys.stderr)
+                    pg.goto("https://xueqiu.com/", wait_until="domcontentloaded", timeout=60000)
+                    pg.wait_for_timeout(4000)
+                resp = ctx.request.get(url, headers={"Referer": "https://xueqiu.com/"})
+                print(f"xueqiu api -> {resp.status}", file=sys.stderr)
+                if resp.status != 200:
+                    raise RuntimeError(f"xueqiu api HTTP {resp.status}")
+                text = resp.text()
+                if not text:
+                    raise RuntimeError("xueqiu api empty body")
+                return text
+            finally:
+                browser.close()
+
+    try:
+        return warmup()
+    except ImportError:
+        print("xueqiu: patchright not installed, using fetch chain", file=sys.stderr)
+    except Exception as e:  # noqa: BLE001
+        if "Executable doesn't exist" in str(e):
+            print("xueqiu: patchright browser missing; "
+                  "install with: .venv-scrapling/bin/python -m patchright install chromium", file=sys.stderr)
+        else:
+            print(f"xueqiu: browser warmup failed ({type(e).__name__}: {str(e)[:100]}), "
+                  "using fetch chain", file=sys.stderr)
+    return fetch_raw(url)
+
+
 def parse_xueqiu(raw: str) -> list[dict]:
-    """雪球全站讨论时间线：外层 list 的 data 字段是帖子 JSON 字符串。必须浏览器导航拿到，
-    若返回的是阿里云 WAF 挑战页（带 _waf_ 标记且无帖子结构）直接抛错，本轮跳过。"""
+    """雪球全站讨论时间线：外层 list 的 data 字段是帖子 JSON 字符串。取数走 fetch_xueqiu
+   （patchright 首页预热种 xq_a_token cookie 后调 API）；若返回的是阿里云 WAF 挑战页
+    （带 _waf_ 标记且无帖子结构）直接抛错，本轮跳过。"""
     start = raw.find("{")
     if start < 0 or ("_waf_" in raw[:2000] and '"list"' not in raw):
         raise RuntimeError("xueqiu WAF challenge page, skip this round")
@@ -372,14 +485,14 @@ def main() -> None:
 
     jobs = []
     for sid, name, url in FEEDS:
-        jobs.append((sid, name, lambda u=url: parse_feed(fetch_text(u))))
+        jobs.append((sid, name, lambda u=url: parse_feed(fetch_raw(u))))
     for cfg in PAGES:
-        jobs.append((cfg["id"], cfg["name"], lambda c=cfg: parse_page(fetch_text(c["url"]), c)))
+        jobs.append((cfg["id"], cfg["name"], lambda c=cfg: parse_page(fetch_rendered(c["url"]), c)))
     for sid, name, url in APIS:
-        jobs.append((sid, name, lambda u=url: parse_wallstreetcn(fetch_text(u))))
+        jobs.append((sid, name, lambda u=url: parse_wallstreetcn(fetch_raw(u))))
     jobs.append(("push-guba", "东方财富股吧", collect_guba))
     jobs.append(("push-hn", "Hacker News 讨论", parse_hn))
-    jobs.append(("push-xueqiu", "雪球讨论", lambda: parse_xueqiu(fetch_text(XUEQIU_TIMELINE))))
+    jobs.append(("push-xueqiu", "雪球讨论", lambda: parse_xueqiu(fetch_xueqiu(XUEQIU_TIMELINE))))
 
     for sid, name, run in jobs:
         try:
