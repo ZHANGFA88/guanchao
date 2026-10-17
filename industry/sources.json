@@ -1002,6 +1002,56 @@
       "site_fulltext": false,
       "syndicate_fulltext": false,
       "icon_url": "https://www.google.com/s2/favicons?domain=eeo.com.cn&sz=64"
+    },
+    {
+      "id": "push-guba",
+      "name": "东方财富股吧",
+      "kind": "external",
+      "config": {},
+      "tier": "T1",
+      "owner_entity_id": null,
+      "participation_mode": "hot_signal",
+      "interval_minutes": 30,
+      "tags": [
+        "讨论",
+        "A股"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "icon_url": "https://www.google.com/s2/favicons?domain=eastmoney.com&sz=64"
+    },
+    {
+      "id": "push-xueqiu",
+      "name": "雪球讨论",
+      "kind": "external",
+      "config": {},
+      "tier": "T1",
+      "owner_entity_id": null,
+      "participation_mode": "hot_signal",
+      "interval_minutes": 30,
+      "tags": [
+        "讨论"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "icon_url": "https://www.google.com/s2/favicons?domain=xueqiu.com&sz=64"
+    },
+    {
+      "id": "push-hn",
+      "name": "Hacker News 讨论",
+      "kind": "external",
+      "config": {},
+      "tier": "T2",
+      "owner_entity_id": null,
+      "participation_mode": "hot_signal",
+      "interval_minutes": 30,
+      "tags": [
+        "讨论",
+        "国际"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "icon_url": "https://www.google.com/s2/favicons?domain=news.ycombinator.com&sz=64"
     }
   ]
 }

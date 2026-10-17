@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """市况台浏览器采集推送器：抓框架直采过不去的信源，把标题+链接+时间(+摘要)推进 external 信源。
 
-三种模式：
+四种模式：
   feed  —— RSS 被指纹墙挡住（SCMP、巴伦）：用隐身浏览器打开 feed 地址，仍按 RSS 解析。
   page  —— 没有可用 RSS 的财经站点（第一财经、财新、每经、证券时报、FT中文网、21世纪、经济观察报）：
            打开列表页/首页，按各站文章链接规律抽标题与链接。只搬标题与链接，与 RSS 订阅等价，不抓正文。
   api   —— 站点公开接口（华尔街见闻快讯 lives API）：直接读 JSON。
+  signal —— 免费讨论源（东方财富股吧、雪球、Hacker News）：推给 hot_signal 信源，只给热点供讨论证据，
+           永不单独成条（框架 group 逻辑写死），是 X 付费讨论层的免费替代。
 
 抓取优先 Scrapling StealthyFetcher（真实浏览器指纹），失败回退 DynamicFetcher，再回退普通请求。
 服务端按 url 去重，可重复运行；建议每 30 分钟跑一次（见 docs/SCRAPLING.md）。
@@ -82,6 +84,16 @@ APIS = [
     ("push-wallstreetcn", "华尔街见闻快讯",
      "https://api-one.wallstcn.com/apiv1/content/lives?channel=global-channel&client=pc&limit=30"),
 ]
+
+# ---------- signal 模式：免费讨论源（hot_signal 信源） ----------
+# 股吧盯盘名单：高关注度 A 股大票（讨论证据靠标题文本与报道归组，名单求精不求多）。
+GUBA_BOARDS = [
+    ("600519", "贵州茅台"), ("000858", "五粮液"), ("300750", "宁德时代"), ("002594", "比亚迪"),
+    ("600036", "招商银行"), ("601318", "中国平安"), ("688981", "中芯国际"), ("603259", "药明康德"),
+    ("601012", "隆基绿能"), ("002475", "立讯精密"), ("300059", "东方财富"), ("600276", "恒瑞医药"),
+]
+HN_MIN_SCORE = 120
+XUEQIU_TIMELINE = "https://xueqiu.com/v4/statuses/public_timeline_by_category.json?since_id=-1&max_id=-1&count=30&category=-1"
 
 
 def read_token() -> str:
@@ -228,6 +240,113 @@ def parse_wallstreetcn(raw: str) -> list[dict]:
     return items
 
 
+def fetch_plain(url: str) -> str:
+    req = urllib.request.Request(url, headers={"User-Agent": UA})
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        return resp.read().decode("utf-8", errors="replace")
+
+
+# ---------- signal 解析 ----------
+def parse_hn() -> list[dict]:
+    """HN 官方 Firebase 接口（免费免 Key）：头条里分数达标的才推，标题就是讨论帖标题。"""
+    from concurrent.futures import ThreadPoolExecutor
+
+    ids = json.loads(fetch_plain("https://hacker-news.firebaseio.com/v0/topstories.json"))[:40]
+
+    def one(i):
+        try:
+            return json.loads(fetch_plain(f"https://hacker-news.firebaseio.com/v0/item/{i}.json"))
+        except Exception:  # noqa: BLE001
+            return None
+
+    with ThreadPoolExecutor(max_workers=8) as ex:
+        raw = [r for r in ex.map(one, ids) if r]
+    items = []
+    for it in raw:
+        if it.get("type") != "story" or it.get("dead") or it.get("deleted"):
+            continue
+        if (it.get("score") or 0) < HN_MIN_SCORE or not it.get("title"):
+            continue
+        item = {"title": it["title"][:200],
+                "url": f"https://news.ycombinator.com/item?id={it['id']}",
+                "publishedAt": datetime.fromtimestamp(it["time"], tz=timezone.utc).isoformat()}
+        if it.get("text"):
+            text = html_lib.unescape(re.sub(r"<[^>]+>", " ", it["text"]))
+            item["summary"] = re.sub(r"\s+", " ", text).strip()[:300]
+        items.append(item)
+    items.sort(key=lambda x: x["publishedAt"], reverse=True)
+    return items[:20]
+
+
+def parse_guba_board(page_html: str, code: str) -> list[dict]:
+    """股吧列表页内嵌 var article_list JSON：按评论/阅读门槛筛真讨论帖。"""
+    at = page_html.find("var article_list=")
+    if at < 0:
+        return []
+    data, _ = json.JSONDecoder().raw_decode(page_html[at + len("var article_list="):])
+    posts = []
+    for p in data.get("re") or []:
+        title = (p.get("post_title") or "").strip()
+        clicks = p.get("post_click_count") or 0
+        comments = p.get("post_comment_count") or 0
+        if len(title) < 10 or (comments < 10 and clicks < 20000):
+            continue
+        try:
+            when = datetime.strptime(p["post_publish_time"], "%Y-%m-%d %H:%M:%S").replace(tzinfo=CST)
+            published = when.astimezone(timezone.utc).isoformat()
+        except Exception:  # noqa: BLE001
+            published = datetime.now(timezone.utc).isoformat()
+        posts.append({"title": title[:200],
+                      "url": f"https://guba.eastmoney.com/news,{code},{p['post_id']}.html",
+                      "publishedAt": published, "_comments": comments})
+    posts.sort(key=lambda x: x["_comments"], reverse=True)
+    for p in posts:
+        del p["_comments"]
+    return posts[:3]
+
+
+def parse_xueqiu(raw: str) -> list[dict]:
+    """雪球全站讨论时间线：外层 list 的 data 字段是帖子 JSON 字符串。必须浏览器导航拿到，
+    若返回的是阿里云 WAF 挑战页（带 _waf_ 标记且无帖子结构）直接抛错，本轮跳过。"""
+    start = raw.find("{")
+    if start < 0 or ("_waf_" in raw[:2000] and '"list"' not in raw):
+        raise RuntimeError("xueqiu WAF challenge page, skip this round")
+    data = json.loads(raw[start:])
+    items = []
+    for entry in data.get("list") or []:
+        try:
+            st = json.loads(entry["data"]) if isinstance(entry.get("data"), str) else entry
+        except Exception:  # noqa: BLE001
+            continue
+        sid, uid = st.get("id"), st.get("user_id")
+        desc = html_lib.unescape(re.sub(r"<[^>]+>", " ", st.get("description") or ""))
+        desc = re.sub(r"\s+", " ", desc).strip()
+        title = (st.get("title") or "").strip() or desc[:60]
+        if not sid or not uid or len(title) < 6:
+            continue
+        if st.get("reply_count") is not None and st["reply_count"] < 3:
+            continue
+        item = {"title": title[:200], "url": f"https://xueqiu.com/{uid}/{sid}",
+                "publishedAt": datetime.fromtimestamp((st.get("created_at") or 0) / 1000, tz=timezone.utc).isoformat()}
+        if desc and desc[: len(title)] != title:
+            item["summary"] = desc[:300]
+        items.append(item)
+    return items[:25]
+
+
+def collect_guba() -> list[dict]:
+    items, seen = [], set()
+    for code, _name in GUBA_BOARDS:
+        try:
+            for it in parse_guba_board(fetch_plain(f"https://guba.eastmoney.com/list,{code}.html"), code):
+                if it["url"] not in seen:
+                    seen.add(it["url"])
+                    items.append(it)
+        except Exception as e:  # noqa: BLE001
+            print(f"guba {code} failed: {type(e).__name__}: {str(e)[:80]}", file=sys.stderr)
+    return items
+
+
 def push(api: str, token: str, source_id: str, source_name: str, items: list[dict]) -> None:
     if not items:
         print(source_id, "no items")
@@ -258,6 +377,9 @@ def main() -> None:
         jobs.append((cfg["id"], cfg["name"], lambda c=cfg: parse_page(fetch_text(c["url"]), c)))
     for sid, name, url in APIS:
         jobs.append((sid, name, lambda u=url: parse_wallstreetcn(fetch_text(u))))
+    jobs.append(("push-guba", "东方财富股吧", collect_guba))
+    jobs.append(("push-hn", "Hacker News 讨论", parse_hn))
+    jobs.append(("push-xueqiu", "雪球讨论", lambda: parse_xueqiu(fetch_text(XUEQIU_TIMELINE))))
 
     for sid, name, run in jobs:
         try:

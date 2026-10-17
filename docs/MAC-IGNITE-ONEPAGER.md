@@ -45,7 +45,7 @@ bash scripts/ignite.sh
 
 脚本会自检 Docker、校验 .env、拉起全栈并等健康检查通过，最后打印访问地址（http://localhost:3000）。
 
-（可选，建议装）推送通道：财新、第一财经、华尔街见闻快讯、每经、证券时报等 13 个源靠它入库（南华早报/巴伦也在内）。按 `docs/SCRAPLING.md` 一次性装好 Scrapling 后，`bash scripts/setup-scrapling-cron.sh` 挂每 30 分钟推送。不装不影响点火，只是这 13 个源没数据。
+（可选，建议装）推送通道：财新、第一财经、华尔街见闻快讯、每经、证券时报等 16 个源靠它入库（南华早报/巴伦也在内，另含股吧、雪球、HN 三个免费讨论源，给热点供讨论热度）。按 `docs/SCRAPLING.md` 一次性装好 Scrapling 后，`bash scripts/setup-scrapling-cron.sh` 挂每 30 分钟推送。不装不影响点火，只是这 16 个源没数据。
 
 ## 4. 点火后回传截图（最终验收的一部分）
 
