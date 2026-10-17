@@ -23,6 +23,7 @@ export interface JobData {
   "sources.mp": { sourceId: string; reason?: "schedule" | "manual" };
   "notify.selected": { articleId: string; attempt?: number };
   "publication.republish-source": { sourceId: string };
+  "live.brief": { scope: string };
   "media.prepare": { articleId: string } | { url: string; mode: string };
 }
 export type QueueName = keyof JobData;
@@ -37,6 +38,7 @@ export const QUEUES = {
   mpCheck: "sources.mp",
   notifySelected: "notify.selected",
   republishSource: "publication.republish-source",
+  liveBrief: "live.brief",
   prepareMedia: "media.prepare",
 } as const satisfies Record<string, QueueName>;
 
@@ -54,6 +56,7 @@ const QUEUE_OPTIONS: Record<QueueName, QueueOptions> = {
   [QUEUES.notifySelected]: { policy: "short", retryLimit: 0, expireInSeconds: 300 },
   [QUEUES.republishSource]: { policy: "short", retryLimit: 2, retryDelay: 60, expireInSeconds: 3600 },
   [QUEUES.prepareMedia]: { policy: "short", retryLimit: 1, retryDelay: 120, expireInSeconds: 600 },
+  [QUEUES.liveBrief]: { policy: "short", retryLimit: 1, retryDelay: 30, expireInSeconds: 300 },
 };
 
 const ensured = new Set<string>();
