@@ -1,4 +1,4 @@
-import { Link, redirect, useLoaderData } from "react-router";
+import { Link, redirect, useLoaderData, useSearchParams } from "react-router";
 import type { Route } from "./+types/home";
 import type { MonitorResponse, TimelineResponse } from "@aihot/contracts/site";
 import { apiGet, cachedPage, loadOr404 } from "../lib/api.server";
@@ -10,6 +10,8 @@ import type { Screen } from "../components/shell/screens";
 import { Timeline } from "../features/feed/Timeline";
 import { SearchField } from "../features/feed/Filters";
 import { Observatory, TodayCounter } from "../features/observatory/Observatory";
+import { LiveWall } from "../features/live/LiveWall";
+import { LiveBriefStrip } from "../features/live/LiveBrief";
 import { River } from "../features/observatory/River";
 import { HotWatch } from "../features/observatory/HotWatch";
 import { toggleMoving, useMoving } from "../features/observatory/motion-store";
@@ -55,6 +57,8 @@ function SectionHead({ no, title, note, to, toLabel }: { no: string; title: stri
 export default function Home() {
   const { data, collectedToday, hotStats } = useLoaderData<typeof loader>();
   const moving = useMoving();
+  const [params] = useSearchParams();
+  const poster = params.get("mode") === "poster";
   return (
     <div className="pb-6">
       <div className="flex flex-wrap items-start gap-4">
@@ -104,6 +108,12 @@ export default function Home() {
             </p>
           </>
         )}
+      </section>
+
+      <section className="mt-8">
+        <SectionHead no="05" title="电视直播" note="多窗同页 · 静音预播" to="/live" toLabel="完整版面" />
+        <LiveWall compact poster={poster} />
+        <LiveBriefStrip />
       </section>
     </div>
   );
