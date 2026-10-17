@@ -36,7 +36,7 @@ esac
 if [ "$bad_key" = 1 ]; then
   fail ".env 里 LLM_API_KEY 还没填。" "按 docs/PROVIDERS.md 任选一家（推荐千问），把 .env 的 LLM_BASE_URL / LLM_API_KEY / LLM_MODEL 三行填好后重跑本脚本。"
 fi
-[ -n "${MODEL:-}" ] || fail ".env 里 LLM_MODEL 是空的。" "按 docs/PROVIDERS.md 填上模型名（如 qwen-plus / gemini-2.5-flash / deepseek-flash / gpt-4o-mini）后重跑。"
+[ -n "${MODEL:-}" ] || fail ".env 里 LLM_MODEL 是空的。" "按 docs/PROVIDERS.md 填上模型名（如 qwen3.7-plus / gemini-2.5-flash / deepseek-flash / gpt-4o-mini）后重跑。"
 echo "✓ Key 已填：${BASE_URL:-（未填 BASE_URL，默认 DeepSeek）} / 模型 ${MODEL}"
 for flag in COLLECT_ENABLED MODEL_CALLS_ENABLED; do
   v="$(envval "$flag")"

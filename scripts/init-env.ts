@@ -19,4 +19,4 @@ const text = readFileSync(".env.example", "utf8")
 writeFileSync(".env", text, { mode: 0o600 });
 console.log("已生成 .env。");
 console.log(`管理员密码：${password}（也写在 .env 的 ADMIN_PASSWORD 里）`);
-if (!llmKey) console.log("还差一步：在 .env 里填上 LLM_API_KEY（LLM_BASE_URL、LLM_MODEL 已按主力千问 Qwen-Plus 预置；换商才改，见 docs/PROVIDERS.md）。");
+if (!llmKey) console.log("还差一步：在 .env 里填上 LLM_API_KEY（LLM_BASE_URL、LLM_MODEL 已按主力千问 qwen3.7-plus 预置；换商才改，见 docs/PROVIDERS.md）。");

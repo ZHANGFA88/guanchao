@@ -6,7 +6,7 @@
 
 1. **Docker Desktop**（Mac 版）：https://www.docker.com/products/docker-desktop/ ——装好并启动（菜单栏鲸鱼图标稳定）。
 2. **模型 Key**（四选一，对照 `docs/PROVIDERS.md`）：
-   - 推荐 **千问 Qwen-Plus**：中文日报成稿最稳、价格最低（百炼兼容模式，开 `enable_thinking:false`）。
+   - 推荐 **千问 qwen3.7-plus**：中文日报成稿最稳、价格最低（百炼兼容模式，开 `enable_thinking:false`）。
    - 备选：Gemini 2.5 Flash（英文/长上下文最强、极便宜）、DeepSeek（最便宜）、GPT-4o-mini（同价位不占优）。
 3. 本仓库已克隆：`git clone https://github.com/ZHANGFA88/shikuang.git && cd shikuang`
 

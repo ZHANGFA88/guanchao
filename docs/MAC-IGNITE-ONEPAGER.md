@@ -12,7 +12,7 @@ cd shikuang
 
 （已克隆过就在目录里 `git pull`。）
 
-## 2. 填 Key（主力：千问 Qwen-Plus）
+## 2. 填 Key（主力：千问 qwen3.7-plus）
 
 在阿里云百炼控制台开通并复制 API Key 后：
 
@@ -30,7 +30,7 @@ LLM_API_KEY=<你的百炼 Key>
 
 ```bash
 LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
-LLM_MODEL=qwen-plus
+LLM_MODEL=qwen3.7-plus
 LLM_EXTRA_JSON={"enable_thinking":false}
 ```
 

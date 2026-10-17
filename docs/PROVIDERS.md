@@ -1,6 +1,6 @@
-# 模型接口预设（默认已定：主力千问 Qwen-Plus，备选 Gemini 2.5 Flash）
+# 模型接口预设（默认已定：主力千问 qwen3.7-plus，备选 Gemini 2.5 Flash）
 
-> 2026-10-16 架构定版：主力 = 千问 Qwen-Plus（预设一）；仅当英文归纳质量明显不够时切 Gemini 2.5 Flash（预设二）。换商只改 `.env` 三行。
+> 2026-10-16 架构定版、2026-10-17 架构裁定修订：主力 = 千问 qwen3.7-plus（预设一，owner 的 token-plan 目录无 qwen-plus、该名曾实证 404）；仅当英文归纳质量明显不够时切 Gemini 2.5 Flash（预设二）。换商只改 `.env` 三行。
 
 本站的筛选、打分、写作、归组全部走**一个 OpenAI 兼容接口**，配置只在 `.env` 里：
 
@@ -19,7 +19,7 @@ MODEL_CALLS_ENABLED=true   # 这两个开关不设为 true，不采集、不调�
 
 ```bash
 LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
-LLM_MODEL=qwen-plus
+LLM_MODEL=qwen3.7-plus
 LLM_EXTRA_JSON={"enable_thinking":false}
 ```
 

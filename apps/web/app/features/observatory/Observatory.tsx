@@ -30,7 +30,8 @@ export function Observatory() {
   const [activeId, setActiveId] = useState<string>("");
   const [results, setResults] = useState<ScanResult[]>([]);
   const [focused, setFocused] = useState<string | null>(null);
-  const [reading, setReading] = useState(false);
+  /** 扫描命中话题（引擎 onCardDone 时点）：星图自动高亮；下一张卡读完时替换/清除（见 handleCardDone 注）。 */
+  const [scanSlug, setScanSlug] = useState<string | null>(null);
   const [readTab, setReadTab] = useState<"follow" | "browse">("follow");
   const [expandSources, setExpandSources] = useState(false);
   const [expandTopics, setExpandTopics] = useState(false);
@@ -38,7 +39,7 @@ export function Observatory() {
   const cardRefs = useRef(new Map<string, HTMLDivElement>());
   const resultSeq = useRef(0);
 
-  const spiderActive = moving && !focused && !reading;
+  const spiderActive = moving && !focused;
 
   useEffect(() => {
     let stop = false;
@@ -62,15 +63,23 @@ export function Observatory() {
 
   const handleCardStart = useCallback((id: string) => {
     setActiveId(id);
+    // 不在此清除 scanSlug：引擎时序实测——一张卡读完后 releaseCard 先以
+    // onCardStart("") 释放、调度器约一帧后即以真实 id 开始下一卡（无卡间停留），
+    // 若在 start 清除，onCardDone 刚点亮的高亮只存一帧、不可见也不可验。
   }, []);
 
   const handleCardDone = useCallback((item: MonitorFeedItem) => {
     resultSeq.current += 1;
     const key = resultSeq.current;
-    setResults((prev) => [{ item, slug: item.topics[0] ?? null, at: new Date(), key }, ...prev].slice(0, 6));
+    const slug = item.topics[0] ?? null;
+    setResults((prev) => [{ item, slug, at: new Date(), key }, ...prev].slice(0, 6));
+    // 引擎在该卡所有彗星线程落地后才回调（见 Spider.tsx mode "thread"）：此处即「扫描命中」时点。
+    // 清除口径（报架构裁定）：高亮保留至下一张卡读完——有新命中则替换、无话题则清除；
+    // 不按「下一卡 start 清除」字面执行，理由见 handleCardStart 注（start 距 done 仅一帧）。
+    setScanSlug(slug);
   }, []);
 
-  const status = focused ? "话题聚焦" : !moving ? "已暂停" : reading ? "阅读暂停" : "收录回放";
+  const status = focused ? "话题聚焦" : !moving ? "已暂停" : "收录回放";
   const focusItems = useMemo(() => {
     if (!focused || !data) return [];
     const inTopic = data.feed.items.filter((it) => it.topics.includes(focused));
@@ -153,7 +162,7 @@ export function Observatory() {
             {data && <span className="text-[11.5px] text-ink-4">{data.topics.filter((t) => t.group !== "company").length} 话题 · {data.topics.filter((t) => t.group === "company").length} 机构</span>}
           </div>
           {data ? (
-            <StarMap data={data} focused={focused} onFocus={setFocused} />
+            <StarMap data={data} focused={focused} onFocus={setFocused} scanSlug={scanSlug} />
           ) : (
             <div className="flex h-[420px] items-center justify-center text-[13px] text-ink-3">{failed ? "星图加载失败" : "星图加载中…"}</div>
           )}
@@ -167,8 +176,6 @@ export function Observatory() {
         {/* Reading column */}
         <div
           className="border-t border-line-soft px-3 py-3 lg:border-l lg:border-t-0"
-          onMouseEnter={() => setReading(true)}
-          onMouseLeave={() => setReading(false)}
         >
           <h5 className="mb-2.5 px-1 text-[11px] font-semibold tracking-[0.18em] text-ink-4">
             {focused ? `话题聚焦 · ${topicName(focused)}` : "扫描阅读"}

@@ -110,17 +110,19 @@ function layout(topics: Topic[], pairs: MonitorResponse["pairs"]): Map<string, P
   return placed;
 }
 
-export function StarMap({ data, focused, onFocus }: {
+export function StarMap({ data, focused, onFocus, scanSlug }: {
   data: MonitorResponse;
   focused: string | null;
   onFocus: (slug: string | null) => void;
+  /** 扫描命中的话题（引擎 onCardDone 透传）：样式与 hover 同等的自动高亮，优先级低于 focused/hover。 */
+  scanSlug?: string | null;
 }) {
   const placed = useMemo(() => layout(data.topics, data.pairs), [data]);
   const [hovered, setHovered] = useState<string | null>(null);
   const groupRefs = useRef(new Map<string, SVGGElement>());
   const edgeRefs = useRef(new Map<string, SVGPathElement>());
   const dotRefs = useRef(new Map<string, SVGCircleElement>());
-  const active = focused ?? hovered;
+  const active = focused ?? hovered ?? scanSlug ?? null;
 
   const neighbours = useMemo(() => {
     if (!active) return null;
@@ -258,11 +260,16 @@ export function StarMap({ data, focused, onFocus }: {
               >
                 {p.topic.name}
               </text>
-              {p.topic.group === "company" && (
-                <text textAnchor="middle" dy="1.5em" fontSize="8.5" fill="var(--ink-4)">
-                  {p.topic.total}
-                </text>
-              )}
+              {/* 所有节点名下常驻计数（SPEC §3 改裁 2026-10-17 21:12）：话题=组色、机构=灰字，命中/hover 与名称同变热点色。 */}
+              <text
+                textAnchor="middle"
+                dy="1.5em"
+                fontSize="9.5"
+                fill={hoveredNow ? "#e0521f" : p.topic.group === "company" ? "var(--ink-4)" : (PALETTES[p.topic.group] ?? PALETTES.field!)[0]}
+                opacity="0.9"
+              >
+                {p.topic.total.toLocaleString()}
+              </text>
             </g>
           );
         })}
