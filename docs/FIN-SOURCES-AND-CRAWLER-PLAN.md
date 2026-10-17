@@ -74,4 +74,4 @@ SPCX/SpaceX 专项（非新源，是检索样本，见设计纸）：SpaceX 为�
 
 小结：第一批 8 源 6 通 2 未通；通者单请求时延 0.6–2.2s，1–5 分钟轮询可达快讯级时效。落地建议（待架构过目）：6 通者按 external 推送或 RSS/直采形态分流接入（EDGAR/披露易/巨潮/arXiv 走推送器 api/page 模式或框架直采，实测后定）；金十/财联社挂起候选，不凑数。
 
-**落地状态（2026-10-17 晚，架构照准接入单 docs/SOURCE-ACCESS-BATCH1.md）**：6 源已按框架级实测分流接入——东财快讯=json_list 直采（json-em-fastnews，5 分钟）、arXiv=rss 直采（rss-arxiv-qfin，6 小时）、新浪7×24/EDGAR/披露易/巨潮=external 推送（push-sina724/push-sec-edgar/push-hkexnews/push-cninfo，推送器 +4 解析器，快讯子集 cron 5 分钟轮）。总源数 58→64（A 快讯 +2、B 研报/公告 +4）；finflash 汇聚不下线、与东财/新浪直采互备观察一周。代码与云端样本证据齐后整批报架构核批推仓。
+**落地状态（2026-10-17 晚，架构照准接入单 docs/SOURCE-ACCESS-BATCH1.md）**：6 源已按框架级实测分流接入——东财快讯=json_list 直采（json-em-fastnews，5 分钟）、arXiv=rss 直采（rss-arxiv-qfin，6 小时）、新浪7×24/EDGAR/披露易/巨潮=external 推送（push-sina724/push-sec-edgar/push-hkexnews/push-cninfo，推送器 +4 解析器，快讯子集 cron 5 分钟轮）。总源数 58→64（A 快讯 +2、B 研报/公告 +4）；finflash 汇聚不下线、与东财/新浪直采互备观察一周。批次已经架构核批、转主聊天推送。**EDGAR 状态=启用**：曾因 SEC 要求邮箱形态 UA 一度停源，owner 提供公开联系邮箱后于当晚复验通过（三路 atom 200、49 条入池，证据 cloudrun/evidence/batch1-sources-2026-10-17.md）；Mac 侧注入 `EDGAR_CONTACT_UA` 环境变量即启用（见 docs/SCRAPLING.md），邮箱值不落仓。
