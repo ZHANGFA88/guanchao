@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { MonitorResponse } from "@aihot/contracts/site";
+import { useMoving } from "./motion-store";
 
 type Topic = MonitorResponse["topics"][number];
 
@@ -8,6 +9,21 @@ const H = 560;
 const CX = 340;
 const CY = 272;
 const R_OUT = 256;
+
+// 星盘刻度层（SPEC §3，与样板同参数）：环带半径与 layout 的 ringRadius 一致；刻度每 15°、每 45° 加长并标度数。
+const BAND_RADII = [74, 148, 224];
+const TICKS = Array.from({ length: 24 }, (_, i) => {
+  const deg = i * 15;
+  const a = ((deg - 90) * Math.PI) / 180;
+  const long = deg % 45 === 0;
+  const r1 = R_OUT - (long ? 10 : 5);
+  return {
+    deg, long,
+    x1: CX + Math.cos(a) * r1, y1: CY + Math.sin(a) * r1,
+    x2: CX + Math.cos(a) * R_OUT, y2: CY + Math.sin(a) * R_OUT,
+    lx: CX + Math.cos(a) * (R_OUT - 22), ly: CY + Math.sin(a) * (R_OUT - 22),
+  };
+});
 
 const PALETTES: Record<string, string[]> = {
   company: ["#4a6fa5", "#6387b8", "#86a8cc", "#3a5a8c"],
@@ -37,8 +53,13 @@ interface Placed {
   y: number;
   cloud: number;
   particles: Array<{ dx: number; dy: number; r: number; fill: string; o: number }>;
-  phase: number;
-  speed: number; // near-zero drift kept only as a conservative stand-in (no drift found in the reference engine)
+  // 集群浮动参数（SPEC §3 浮动口径，样板同参数）：振幅 4–8px、周期 6–12s、双轴独立、逐节点错相，皆由 slug 种子决定。
+  fAx: number;
+  fAy: number;
+  fTx: number;
+  fTy: number;
+  fPx: number;
+  fPy: number;
 }
 
 function layout(topics: Topic[], pairs: MonitorResponse["pairs"]): Map<string, Placed> {
@@ -81,7 +102,12 @@ function layout(topics: Topic[], pairs: MonitorResponse["pairs"]): Map<string, P
       const d = Math.abs(rand() + rand() - 1) * cloud;
       return { dx: Math.cos(a) * d, dy: Math.sin(a) * d * 0.92, r: 1.0 + rand() * 1.2, fill: palette[Math.floor(rand() * palette.length)]!, o: 0.45 + rand() * 0.5 };
     });
-    placed.set(t.slug, { topic: t, x, y, cloud, particles, phase: rand() * Math.PI * 2, speed: 0.004 + rand() * 0.006 });
+    placed.set(t.slug, {
+      topic: t, x, y, cloud, particles,
+      fAx: 4 + rand() * 4, fAy: 4 + rand() * 4,
+      fTx: 6000 + rand() * 6000, fTy: 6000 + rand() * 6000,
+      fPx: rand() * Math.PI * 2, fPy: rand() * Math.PI * 2,
+    });
   }
   // Relaxation: keep clouds apart and inside the disc.
   const list = [...placed.values()];
@@ -110,15 +136,39 @@ function layout(topics: Topic[], pairs: MonitorResponse["pairs"]): Map<string, P
   return placed;
 }
 
-export function StarMap({ data, focused, onFocus, scanSlug }: {
+export function StarMap({ data, focused, onFocus, scanSlug, scanSeq }: {
   data: MonitorResponse;
   focused: string | null;
   onFocus: (slug: string | null) => void;
   /** 扫描命中的话题（引擎 onCardDone 透传）：样式与 hover 同等的自动高亮，优先级低于 focused/hover。 */
   scanSlug?: string | null;
+  /** 扫描命中序号（每次 onCardDone 递增）：同话题连续命中时靠它重启涟漪动画。 */
+  scanSeq?: number;
 }) {
   const placed = useMemo(() => layout(data.topics, data.pairs), [data]);
   const [hovered, setHovered] = useState<string | null>(null);
+  // 浮动总开关：站内动效开关关闭或系统 prefers-reduced-motion 时，集群静止于锚点（SPEC §3）。
+  const moving = useMoving();
+  const [reducedMotion, setReducedMotion] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReducedMotion(mq.matches);
+    const fn = (e: MediaQueryListEvent) => setReducedMotion(e.matches);
+    mq.addEventListener("change", fn);
+    return () => mq.removeEventListener("change", fn);
+  }, []);
+  const floatOnRef = useRef(true);
+  floatOnRef.current = moving && !reducedMotion;
+  // 命中特效（涟漪 + 「+1」）：只由扫描命中触发，hover/focus 不触发；1.6s 后随动画结束撤下。
+  const [hitFx, setHitFx] = useState<{ slug: string; seq: number } | null>(null);
+  useEffect(() => {
+    if (!scanSlug || !scanSeq) return;
+    setHitFx({ slug: scanSlug, seq: scanSeq });
+    const id = window.setTimeout(() => {
+      setHitFx((cur) => (cur && cur.seq === scanSeq ? null : cur));
+    }, 1600);
+    return () => window.clearTimeout(id);
+  }, [scanSlug, scanSeq]);
   const groupRefs = useRef(new Map<string, SVGGElement>());
   const edgeRefs = useRef(new Map<string, SVGPathElement>());
   const dotRefs = useRef(new Map<string, SVGCircleElement>());
@@ -148,11 +198,12 @@ export function StarMap({ data, focused, onFocus, scanSlug }: {
     const tick = (ts: number) => {
       raf = requestAnimationFrame(tick);
       if (document.hidden) return;
-      const t = ts / 1000;
       const pos = new Map<string, { x: number; y: number }>();
+      const floatOn = floatOnRef.current;
       for (const p of placed.values()) {
-        const x = p.x + Math.cos(t * p.speed + p.phase) * 0.9;
-        const y = p.y + Math.sin(t * p.speed * 0.9 + p.phase) * 0.8;
+        // 集群浮动：绕锚点双轴正弦微漂（缓入缓出），关动效时回锚点静止。
+        const x = floatOn ? p.x + Math.sin((ts / p.fTx) * Math.PI * 2 + p.fPx) * p.fAx : p.x;
+        const y = floatOn ? p.y + Math.sin((ts / p.fTy) * Math.PI * 2 + p.fPy) * p.fAy : p.y;
         pos.set(p.topic.slug, { x, y });
         groupRefs.current.get(p.topic.slug)?.setAttribute("transform", `translate(${x},${y})`);
       }
@@ -204,6 +255,17 @@ export function StarMap({ data, focused, onFocus, scanSlug }: {
       `}</style>
       <svg viewBox={`0 0 ${W} ${H}`} className="block h-auto w-full" role="img" aria-label="话题星图">
         <circle cx={CX} cy={CY} r={R_OUT} fill="none" stroke="var(--line)" strokeWidth="1" />
+        {BAND_RADII.map((r) => (
+          <circle key={r} cx={CX} cy={CY} r={r} fill="none" stroke="var(--ink)" strokeOpacity={0.13} />
+        ))}
+        {TICKS.map((t) => (
+          <line key={t.deg} x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2} stroke="var(--ink)" strokeOpacity={t.long ? 0.5 : 0.3} />
+        ))}
+        {TICKS.filter((t) => t.long).map((t) => (
+          <text key={`deg-${t.deg}`} x={t.lx} y={t.ly} fontSize={9} fill="var(--ink)" fillOpacity={0.55} textAnchor="middle" dominantBaseline="middle">
+            {t.deg}°
+          </text>
+        ))}
         {data.pairs.map(([a, b, w]) => {
           const A = placed.get(a), B = placed.get(b);
           if (!A || !B) return null;
@@ -270,6 +332,23 @@ export function StarMap({ data, focused, onFocus, scanSlug }: {
               >
                 {p.topic.total.toLocaleString()}
               </text>
+              {/* 扫描命中特效（SPEC §3，与样板同参数）：细墨涟漪 2 环（第二环迟 190ms）+「+1」上浮；
+                  挂在节点组内，随集群浮动同行、落点不脱靶；仅扫描命中触发，hover/focus 不触发。 */}
+              {hitFx && hitFx.slug === p.topic.slug && (
+                <g key={hitFx.seq} pointerEvents="none">
+                  {[0, 0.19].map((delay) => (
+                    <circle key={delay} r={6} fill="none" stroke="var(--ink)" strokeWidth={1.2} strokeOpacity={0}>
+                      <animate attributeName="r" values={`6;${p.cloud + 30}`} dur="1.06s" begin={`${delay}s`} fill="freeze" />
+                      <animate attributeName="stroke-opacity" values="0.5;0" dur="1.06s" begin={`${delay}s`} fill="freeze" />
+                    </circle>
+                  ))}
+                  <text textAnchor="middle" y={-14} fontSize={12} fontWeight={600} fill="#e0521f" opacity={0}>
+                    +1
+                    <animate attributeName="y" values="-14;-36" dur="1.4s" fill="freeze" />
+                    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.15;0.7;1" dur="1.4s" fill="freeze" />
+                  </text>
+                </g>
+              )}
             </g>
           );
         })}

@@ -32,6 +32,8 @@ export function Observatory() {
   const [focused, setFocused] = useState<string | null>(null);
   /** 扫描命中话题（引擎 onCardDone 时点）：星图自动高亮；下一张卡读完时替换/清除（见 handleCardDone 注）。 */
   const [scanSlug, setScanSlug] = useState<string | null>(null);
+  /** 扫描命中序号：每次 onCardDone 递增，供星图区分「同话题再命中」以重启涟漪。 */
+  const [scanSeq, setScanSeq] = useState(0);
   const [readTab, setReadTab] = useState<"follow" | "browse">("follow");
   const [expandSources, setExpandSources] = useState(false);
   const [expandTopics, setExpandTopics] = useState(false);
@@ -77,6 +79,7 @@ export function Observatory() {
     // 清除口径（报架构裁定）：高亮保留至下一张卡读完——有新命中则替换、无话题则清除；
     // 不按「下一卡 start 清除」字面执行，理由见 handleCardStart 注（start 距 done 仅一帧）。
     setScanSlug(slug);
+    setScanSeq((s) => s + 1);
   }, []);
 
   const status = focused ? "话题聚焦" : !moving ? "已暂停" : "收录回放";
@@ -162,7 +165,7 @@ export function Observatory() {
             {data && <span className="text-[11.5px] text-ink-4">{data.topics.filter((t) => t.group !== "company").length} 话题 · {data.topics.filter((t) => t.group === "company").length} 机构</span>}
           </div>
           {data ? (
-            <StarMap data={data} focused={focused} onFocus={setFocused} scanSlug={scanSlug} />
+            <StarMap data={data} focused={focused} onFocus={setFocused} scanSlug={scanSlug} scanSeq={scanSeq} />
           ) : (
             <div className="flex h-[420px] items-center justify-center text-[13px] text-ink-3">{failed ? "星图加载失败" : "星图加载中…"}</div>
           )}
