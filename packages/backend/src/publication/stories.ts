@@ -53,6 +53,8 @@ interface ReportRow extends RepresentativeIdentity {
   body_mode: "full" | "summary";
   score: number | null;
   timeline_at: Date;
+  title_zh: string | null;
+  summary_zh: string | null;
   id: string;
   title: string;
   summary: string | null;
@@ -76,9 +78,12 @@ async function storyReports(storyId: number, now: Date): Promise<ReportRow[]> {
     SELECT DISTINCT ON (p.article_id) p.article_id AS id, p.title, p.summary, p.url, p.selected,
       coalesce(p.published_at, p.discovered_at) AS at, s.id AS source_id, s.name AS source_name,
       (s.tier = 'T1') AS first_party, f.id AS fact_id,
+      a.title_zh AS title_zh, COALESCE(an.summary_zh, a.summary_zh) AS summary_zh,
       CASE WHEN ${compositeCondition()} THEN 'mention' ELSE fa.role END AS role, p.body_mode, p.score, p.timeline_at, ${REPRESENTATIVE_COLUMNS}
     FROM facts f JOIN fact_articles fa ON fa.fact_id = f.id JOIN publications p ON p.article_id = fa.article_id
     JOIN sources s ON s.id = p.source_id
+    LEFT JOIN articles a ON a.id = p.article_id
+    LEFT JOIN analyses an ON an.id = p.analysis_id
     WHERE f.story_id = ${storyId} AND ${storyReportCondition(now)}
     ORDER BY p.article_id, (fa.role = 'primary') DESC, (fa.role <> 'mention') DESC, f.id`;
 }
@@ -87,7 +92,9 @@ function reportView(r: ReportRow): StoryReportView {
   return {
     id: r.id,
     title: r.title,
+    titleZh: r.title_zh,
     summary: r.summary,
+    summaryZh: r.summary_zh,
     source: { name: publicSourceName(r.source_name), firstParty: r.first_party },
     publishedAt: r.at.toISOString(),
     selected: r.selected,

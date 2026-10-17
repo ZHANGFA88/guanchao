@@ -11,7 +11,7 @@ test("a wrapping outline settles with classic scrollbars at a limited viewport h
     id: `section-${i}`, level: 2, text: i === 0 ? "用于验证目录滚动行为的长文章标题测试" : `Section ${i}`,
   }));
   const item: SiteItemDetail = {
-    id: "outline-fixture", title: "目录滚动检查", summary: "固定摘要", reason: "固定推荐理由", source: { name: "Fixture" },
+    id: "outline-fixture", title: "目录滚动检查", titleZh: null, summary: "固定摘要", summaryZh: null, reason: "固定推荐理由", source: { name: "Fixture" },
     publishedAt: at, timelineAt: at, discoveredAt: at, category: null, tags: [], score: 80, selected: true,
     channel: "news", x: null, originalTitle: null, links: { original: "https://example.org/article" },
     story: null, readingMode: "full", author: null, outline, relatedStories: [], topics: [], indexable: false,

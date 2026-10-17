@@ -33,7 +33,7 @@ const api = createServer((req, res) => {
   if (url.pathname === "/api/health") return res.end("{}");
   if (url.pathname === "/api/site/items/video-fixture") {
     const detail: SiteItemDetail = {
-      id: "video-fixture", title: "原生视频检查", summary: "固定摘要", reason: "固定推荐理由", source: { name: "Fixture" },
+      id: "video-fixture", title: "原生视频检查", titleZh: null, summary: "固定摘要", summaryZh: null, reason: "固定推荐理由", source: { name: "Fixture" },
       publishedAt: at, timelineAt: at, discoveredAt: at, category: "policy", tags: [], score: 80, selected: true,
       channel: "news", x: null, originalTitle: "Video fixture", links: { original: "https://example.org/article" },
       story: null, readingMode: "full", author: null, outline: [], relatedStories: [], topics: [], indexable: true,

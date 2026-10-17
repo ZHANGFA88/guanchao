@@ -19,10 +19,12 @@ const MAX_REPORTS = 100;
 
 /** The fact's public reports under the filters, newest first; null when it has none. */
 export async function loadGroupReports(q: GroupReportsQuery, now = new Date()): Promise<GroupReportsResponse | null> {
-  const members = await sql<{ id: string; title: string; timeline_at: Date; url: string; source_name: string }[]>`
-    SELECT p.article_id AS id, p.title, p.timeline_at, p.url, s.name AS source_name
+  const members = await sql<{ id: string; title: string; title_zh: string | null; timeline_at: Date; url: string; source_name: string }[]>`
+    SELECT p.article_id AS id, p.title, p.timeline_at, p.url, s.name AS source_name,
+      a.title_zh AS title_zh
     FROM facts f JOIN fact_articles fa ON fa.fact_id = f.id JOIN publications p ON p.article_id = fa.article_id
     JOIN sources s ON s.id = p.source_id
+    LEFT JOIN articles a ON a.id = p.article_id
     WHERE f.public_id = ${q.factPublicId} AND ${evidenceCondition()} AND ${listedCondition(now)}
       ${channelCondition(q.channel)} ${categoryCondition(q.category)} ${tagCondition(q.tag)}
     ORDER BY p.timeline_at DESC, p.article_id ASC
@@ -33,6 +35,7 @@ export async function loadGroupReports(q: GroupReportsQuery, now = new Date()): 
     reports: members.map((m) => ({
       id: m.id,
       title: m.title,
+      titleZh: m.title_zh,
       source: { name: publicSourceName(m.source_name) },
       timelineAt: m.timeline_at.toISOString(),
       originalUrl: m.url,

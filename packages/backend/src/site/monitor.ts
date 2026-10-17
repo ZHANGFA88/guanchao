@@ -13,7 +13,7 @@ import { TAG_SYNONYMS } from "@aihot/industry/taxonomy";
 const FEED_LIMIT = 40;
 const SCAN_WINDOW = 3000;
 
-interface ArticleRow { id: string; title: string; source_id: string; discovered_at: Date; excerpt: string | null; atops: string[]; asum: string | null; url: string | null }
+interface ArticleRow { id: string; title: string; title_zh: string | null; summary_zh: string | null; source_id: string; discovered_at: Date; excerpt: string | null; atops: string[]; asum: string | null; url: string | null }
 interface SourceRow { id: string; name: string; kind: string; owner_entity_id: string | null; icon_url: string | null }
 
 const monitor = cached(() => queryMonitor(new Date()), { freshMs: 60_000, maxStaleMs: 10 * 60_000 });
@@ -55,7 +55,7 @@ async function queryMonitor(now: Date): Promise<MonitorResponse> {
   const [sources, articles, totals] = await Promise.all([
     sql<SourceRow[]>`SELECT id, name, kind, owner_entity_id, icon_url FROM sources WHERE enabled`,
     sql<ArticleRow[]>`
-      SELECT a.id, a.title, a.source_id, a.discovered_at, a.excerpt, a.url, an.summary_zh AS asum, coalesce(m.topics, '{}') AS atops
+      SELECT a.id, a.title, a.title_zh, a.summary_zh, a.source_id, a.discovered_at, a.excerpt, a.url, an.summary_zh AS asum, coalesce(m.topics, '{}') AS atops
       FROM articles a
       LEFT JOIN (SELECT DISTINCT ON (article_id) article_id, tags, subjects, summary_zh FROM analyses ORDER BY article_id, input_revision DESC) an ON an.article_id = a.id
       LEFT JOIN LATERAL (
@@ -101,7 +101,9 @@ async function queryMonitor(now: Date): Promise<MonitorResponse> {
     return {
       id: a.id,
       title: a.title,
+      titleZh: a.title_zh ?? null,
       summary: (a.excerpt ?? a.asum) ? (a.excerpt ?? a.asum)!.slice(0, 160) : null,
+      summaryZh: a.asum ?? a.summary_zh ?? null,
       source: src ? publicSourceName(src.name) : a.source_id,
       at: a.discovered_at.toISOString(),
       kind: src?.kind ?? "rss",

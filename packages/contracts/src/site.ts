@@ -40,8 +40,12 @@ export interface StoryRef {
 export interface ItemSummary {
   id: string;
   title: string;
+  /** Chinese rendition of the headline (articles.title_zh), null when not yet translated. */
+  titleZh: string | null;
   originalTitle: string | null;
   summary: string | null;
+  /** Analysis Chinese summary first, headline translation second, null when neither exists. */
+  summaryZh: string | null;
   reason: string | null;
   source: SourceRef;
   links: { original: string };
@@ -57,7 +61,7 @@ export interface ItemSummary {
 }
 
 /** The fields rendered by a site feed card; full original text lives in the item detail. */
-export interface FeedItemSummary extends Pick<ItemSummary, "id" | "title" | "summary" | "reason" | "source" | "publishedAt" | "timelineAt" | "category" | "tags" | "score" | "selected" | "channel"> {
+export interface FeedItemSummary extends Pick<ItemSummary, "id" | "title" | "titleZh" | "summary" | "summaryZh" | "reason" | "source" | "publishedAt" | "timelineAt" | "category" | "tags" | "score" | "selected" | "channel"> {
   x: (Pick<XPostView, "authorName" | "handle" | "avatarUrl" | "avatarSrcSet" | "media"> & {
     quoted: Omit<NonNullable<XPostView["quoted"]>, "url"> | null;
   }) | null;
@@ -165,6 +169,8 @@ export interface SiteItemDetail extends ItemSummary {
 export interface GroupReport {
   id: string;
   title: string;
+  /** Chinese rendition of the headline (articles.title_zh), null when not yet translated. */
+  titleZh: string | null;
   source: SourceRef;
   timelineAt: string;
   originalUrl: string;
@@ -225,7 +231,11 @@ export interface HeatPoint {
 export interface StoryReportView {
   id: string;
   title: string;
+  /** Chinese rendition of the headline (articles.title_zh), null when not yet translated. */
+  titleZh: string | null;
   summary: string | null;
+  /** Analysis Chinese summary first, headline translation second, null when neither exists. */
+  summaryZh: string | null;
   source: SourceRef & { firstParty: boolean };
   publishedAt: string;
   selected: boolean;
@@ -487,7 +497,11 @@ export interface MonitorTopic {
 export interface MonitorFeedItem {
   id: string;
   title: string;
+  /** Chinese rendition of the headline (articles.title_zh), null when not yet translated. */
+  titleZh: string | null;
   summary: string | null;
+  /** Analysis Chinese summary first, headline translation second, null when neither exists. */
+  summaryZh: string | null;
   source: string;
   at: string;
   kind: string;

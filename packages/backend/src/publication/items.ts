@@ -39,6 +39,10 @@ export interface ItemRow {
   author_avatar_url?: string | null;
   author: string | null;
   language: string | null;
+  /** Chinese rendition of the headline (articles.title_zh), null when not yet translated. */
+  title_zh: string | null;
+  /** Analysis Chinese summary first, headline translation second, null when neither exists. */
+  summary_zh: string | null;
   story_public_id: string | null;
   story_title: string | null;
   zh_text: string | null;
@@ -52,6 +56,7 @@ export const ITEM_COLUMNS = sql`
   p.selected, p.seat, p.channel, p.url, p.published_at, p.discovered_at, p.timeline_at, p.visibility,
   p.body_mode, p.indexable, p.fact_id, s.name AS source_name, s.participation_mode AS source_mode,
   a.x_post, a.author, a.language,
+  a.title_zh AS title_zh, COALESCE(an.summary_zh, a.summary_zh) AS summary_zh,
   CASE WHEN s.kind = 'x_search' AND ${sourceOwnsPost(sql`s.name`, sql`a.x_post->>'handle'`)} THEN s.icon_url END AS author_avatar_url,
   st.public_id::text AS story_public_id, st.title AS story_title,
   CASE WHEN p.channel = 'x' THEN tr.body_text END AS zh_text, qt.text_zh AS quoted_zh`;
@@ -69,6 +74,7 @@ export const ITEM_FROM = sql`
   FROM publications p
   JOIN sources s ON s.id = p.source_id
   JOIN articles a ON a.id = p.article_id
+  LEFT JOIN analyses an ON an.id = p.analysis_id
   LEFT JOIN stories st ON st.id = p.story_id AND st.merged_into IS NULL
   LEFT JOIN translations tr ON tr.article_id = p.article_id AND tr.lang = 'zh' AND tr.revision >= a.revision
   LEFT JOIN quote_translations qt ON p.channel = 'x' AND qt.tweet_id = substring(a.x_post->'quoted'->>'url' from '/status/([0-9]+)')`;
@@ -153,8 +159,10 @@ export function toItemSummary(row: ItemRow): ItemSummary {
   return {
     id: row.id,
     title: row.title,
+    titleZh: row.title_zh,
     originalTitle: row.original_title,
     summary: row.summary,
+    summaryZh: row.summary_zh,
     reason: row.selected ? row.reason : null,
     source: { name: publicSourceName(row.source_name) },
     links: { original: row.url },
@@ -175,7 +183,7 @@ export function toFeedItemSummary(row: ItemRow): FeedItemSummary {
   const item = toItemSummary(row);
   const x = showsPost(row) ? xView(row, true) : null;
   return {
-    id: item.id, title: item.title, summary: item.summary ?? (x?.text || null), reason: item.reason,
+    id: item.id, title: item.title, titleZh: item.titleZh, summary: item.summary ?? (x?.text || null), summaryZh: item.summaryZh, reason: item.reason,
     source: item.source, publishedAt: item.publishedAt, timelineAt: item.timelineAt,
     category: item.category, tags: item.tags, score: item.score, selected: item.selected, channel: item.channel,
     x: x ? {
