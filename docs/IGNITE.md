@@ -27,17 +27,17 @@ bash scripts/ignite.sh
 | # | 看什么 | 怎么看 | 预期 |
 |---|---|---|---|
 | 1 | 服务都起来了 | `docker compose ps`，db/api/worker/web 都是 running | 全绿 |
-| 2 | 首页观测台有数据 | http://localhost:3000，首页「今天收录」数字上涨 | 47 源首轮回填中（每源最多约 30 条，实际取决于该源 feed 条数；Worker 日志 `docker compose logs -f worker` 可看采集进度） |
+| 2 | 首页观测台有数据 | http://localhost:3000，首页「今天收录」数字上涨 | 58 源首轮回填中（42 个直采源由 worker 抓，每源最多约 30 条，实际取决于该源 feed 条数；16 个推送源要另装推送通道，见 `docs/SCRAPLING.md`；Worker 日志 `docker compose logs -f worker` 可看采集进度） |
 | 3 | 精选出条目 | 首页「精选」/「全部市场动态」 | 首批分析约 10–30 分钟后出现（采集→正文→评分流水线） |
 | 4 | 日报出刊 | worker 每天 08:00 自动组刊（半小时一轮检查），看 `/daily` | 当天晚间灌入的数据，归次日 08:00 的日报 |
-| 5 | 信源健康 | http://localhost:3000/admin（密码在 `.env` 的 `ADMIN_PASSWORD`） | 47 个源基本都是绿色 |
+| 5 | 信源健康 | http://localhost:3000/admin（密码在 `.env` 的 `ADMIN_PASSWORD`） | 58 个源基本都是绿色 |
 | 6 | 全站自检 | `node scripts/smoke.ts --base http://localhost:3000` | all checks passed |
 
 ## 成本与熔断
 
 - 每笔模型调用框架都会记 **receipt**（回执）：调用结果未知时 30 分钟后自动放行重试一次，避免重复付费；异常会出现在后台的告警里。
 - **模型调用有日熔断（默认开启，不靠 .env）**：上限存在数据库 `budgets` 表里、按服务商分别计（迁移预置，可在管理后台「设置」里调）：默认模型共用 `llm` 行 **40,000 次/日**；千问走 `dashscope` 行 **20,000 次/日**（另有每分钟 100 次、每小时 2,000 次的闸）。所有步骤（评分/理解/归组/摘要/日报）共用同一块额度，没有按步骤分开的上限。日常成本控制主要靠选便宜的模型（预设四家全是 Flash/Plus 级）；想更省，千问/Gemini 的 Flash 级优先，或按 `docs/PROVIDERS.md` 的 `LLM_REASONING_TOKENS` 调。
-- **首日回填不会被熔断卡住**：47 源 × 每源最多约 30 条 ≈ 1,400 篇，每篇约 2–4 次模型调用，合计几千次，远低于 20,000 次/日的额度。真触发熔断时，文章只是进入等待重试（不丢数据），次日额度恢复后自动继续。
+- **首日回填不会被熔断卡住**：42 个直采源 × 每源最多约 30 条 ≈ 1,300 篇（推送源另计），每篇约 2–4 次模型调用，合计几千次，远低于 20,000 次/日的额度。真触发熔断时，文章只是进入等待重试（不丢数据），次日额度恢复后自动继续。
 - 被墙的源（南华早报、巴伦周刊）走 Scrapling 推送器：先按 `docs/SCRAPLING.md` 做一次性安装，再跑 `bash scripts/setup-scrapling-cron.sh` 装成每 30 分钟的定时任务（卸载：同脚本加 `--uninstall`）。
 
 ## 常见故障
@@ -50,6 +50,7 @@ bash scripts/ignite.sh
 | 端口 3000/3001/5432 被占 | 改 `.env` 的 `PORT`（web 对外端口），或停掉占用的进程 |
 | Key 填错 | worker 日志里出现 401/认证失败；改 `.env` 后 `docker compose up -d` 重启即可 |
 | 某个源 403 | 正常的墙，砍掉该源或转 Scrapling 推送（见上） |
+| 源几乎全灭、日志全是 `Blocked private address`、「今天收录」一直 0 | 本机装了 Surge/Clash 等代理工具并开着 fake-IP 模式：容器里解析域名得到 198.18.x 假 IP，被框架的 SSRF 守卫当内网地址拦截。在 `.env` 里设 `EGRESS_PROXY_URL` 指向宿主机代理（OrbStack/Docker Desktop 下主机地址可用 `host.orb.internal` / `host.docker.internal`，如 `EGRESS_PROXY_URL=http://host.orb.internal:6152`），抓取与图片改走代理侧解析即可恢复；改完 `docker compose up -d --force-recreate api worker`。此项是本机网络配置，不要写进仓库的 `.env` 模板。**不要**去开 `ALLOW_PRIVATE_NETWORK_FETCH=true`：生产模式下框架会因此直接拒绝启动，是条死路 |
 | Docker 装不了（Plan B） | 数据库仍用 docker 起：`docker compose up -d db`；然后本机直跑三进程：`node scripts/migrate.ts && node scripts/seed.ts`，再分别起 `NODE_ENV=production node --env-file=.env apps/api/src/main.ts`（3001）、`NODE_ENV=production node --env-file=.env apps/worker/src/main.ts`、先 `npm run build -w @aihot/web` 再到 `apps/web` 下 `NODE_ENV=production node --env-file=../../.env server.ts`（3000）。注意直跑时 `.env` 的 `DATABASE_URL` 要指到本机 5432（docker 里的 `db:5432` 直跑解析不到） |
 
 fusion-office 在本机运行时，它的财经快讯推送：`node scripts/push-finsight.mjs --serve http://127.0.0.1:8772`（`docs/PROVIDERS.md` 有说明）。

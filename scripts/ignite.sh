@@ -45,9 +45,14 @@ done
 echo "✓ 采集与模型调用开关都开着"
 # Web 端口以 .env 的 PORT 为准（docker compose 发布端口读的也是它）：兼容纯端口（3000）
 # 与 host:port（127.0.0.1:3000）两种写法，取冒号后的末尾数字段；.env 没写时沿用上面的默认/环境值。
-ENV_PORT="$(envval PORT)"
+# PORT 是可选键：.env 里没有生效的 PORT 行（init-env 的标准产物就只有注释示例）时，
+# 不许让 grep 落空借 pipefail+set -e 把脚本静默杀掉——判空兜底并提示一声。
+# 必填键（LLM_API_KEY 等）不在此列：取空仍由各自的显式校验报错退出，不许静默吞错。
+ENV_PORT="$(envval PORT || true)"
 if [ -n "${ENV_PORT:-}" ]; then
   PORT_WEB="${ENV_PORT##*:}"
+else
+  echo "· .env 未设 PORT，Web 端口用默认 ${PORT_WEB}（要改就在 .env 里加一行 PORT=端口）"
 fi
 echo "✓ Web 端口：${PORT_WEB}（健康检查与下方地址都按这个端口）"
 
@@ -73,7 +78,7 @@ echo "✓ API 健康（/api/health 返回正常）"
 
 # ⑤ 首轮观察提示
 step "⑤ 首轮采集与 seed 观察"
-echo "现在 worker 正在抓 47 个信源的首轮回填（每个源最多回填约 30 条，当天的新文章优先）。"
+echo "现在 worker 正在抓 42 个直采信源的首轮回填（每个源最多回填约 30 条，当天的新文章优先；另外 16 个信源走推送通道，见 docs/SCRAPLING.md）。"
 echo "观察方法（二选一）："
 echo "  - 看日志：docker compose logs -f worker   （采集进度）"
 echo "  - 看页面：打开 http://localhost:${PORT_WEB} ，首页「今天收录」数字会开始往上涨"
