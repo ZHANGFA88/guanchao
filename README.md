@@ -1,187 +1,186 @@
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/banner-dark.png">
-    <img src="docs/assets/banner-light.png" alt="AIHOT：每个行业，都可以有自己的 AIHOT。很多条信源流进中间的精选，再分给法律、人力资源、金融等各个行业" width="100%">
-  </picture>
-</p>
+# 观潮 · 市场观测台
 
-<p align="center">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-176b75?style=flat-square" alt="MIT License"></a>
-  <img src="https://img.shields.io/badge/Node.js-24-176b75?style=flat-square&logo=nodedotjs&logoColor=white" alt="Node.js 24">
-  <img src="https://img.shields.io/badge/PostgreSQL-17-176b75?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL 17">
-  <img src="https://img.shields.io/badge/Docker-Compose-176b75?style=flat-square&logo=docker&logoColor=white" alt="Docker Compose">
-  <a href="https://aihot.news"><img src="https://img.shields.io/badge/%E7%BA%BF%E4%B8%8A%E5%8E%9F%E7%AB%99-aihot.news-202a30?style=flat-square" alt="线上原站 aihot.news"></a>
-</p>
+**观潮**是一台为中文读者打造的市场新闻观测台：它全天候盯着全球 67 个财经信源，把新闻采集、翻译、筛选、归组、解读成一张「报纸式」的网页——有观测台、有星图、有河流、有日报，还有一面能同页看 Bloomberg / Yahoo Finance / DW 的电视直播墙，和一位会跟着你所看的频道生成要点的 AI 陪看。
 
-<p align="center">
-  <b>一个自己找热点、自己写日报的网站框架。</b><br>
-  把信源换成你的，把精选标准换成你的 KnowHow，它就是你的行业热点站。
-</p>
+站名「观潮」：观天下之潮，潮即市场。
 
-<p align="center">
-  <b>简体中文</b> · <a href="README.en.md">English</a>
-</p>
+![总览页：市场观测台（收录回放 + 话题星图）](docs/images/home-top.png)
 
-<p align="center">
-  <a href="#跑起来">跑起来</a> ·
-  <a href="docs/customize.md">改成你的行业</a> ·
-  <a href="#它是怎么工作的">它是怎么工作的</a> ·
-  <a href="#文档">文档</a> ·
-  <a href="https://github.com/KKKKhazix/AIHOT/discussions">社区交流</a>
-</p>
+总览页。左侧是材料扫描列，机械蜘蛛正沿卡片逐篇读取；中间是话题星图，节点带常驻计数与刻度环，被扫中的话题会亮起；右列是扫描阅读，读完的条目带着命中话题汇入新闻流。今天收录 334 条。
 
-<br>
+![直播窗：三席真实直播同页预播](docs/images/live-page.png)
+
+电视直播窗。Bloomberg TV、Yahoo Finance、DW News 三席真实直播同页静音预播，点任意一窗全屏带声；每席下方有「陪看」——点选后，AI 要点、相关资讯、涉及标的会跟着你正在看的频道切换。CNA 为待验席位（需亚洲日间时段复测，结论出来前只留位不播）。
+
+![首页 05 · 电视直播墙与 AI 要点](docs/images/home05.png)
+
+首页的「05 · 电视直播」。紧凑墙嵌在日报流之下，墙下是 AI 要点一行——过去一小时的频道动态与站内报道互证后的结论，跟着观看走、按需生成。
+
+---
 
 ## 这是什么
 
-[AIHOT](https://aihot.news) 是我做的一个 AI 热点网站。它每天从一批信源里收资料，用大模型先筛一遍、再独立打两次分，挑出真正值得看的，写成中文标题和摘要；把不同来源说的同一件事聚成一个事件，按有多少人在说排出热点；每天早上出一份日报。
+观潮做四件事：
 
-这个仓库是它的引擎和框架：网站、后台、精选流程、聚簇和热度算法，**所有提示词的原文和入选门槛**，都在这里。
+1. **盯**——67 个信源分两路进来：一路框架直采（RSS / JSON 接口），一路隐身推送器专攻被墙、被拦的硬骨头（南华早报、巴伦、披露易、巨潮公告、YouTube 频道动态等）。
+2. **译**——所有新闻的标题与摘要全量翻译成中文展示，链接保留英文原文；全文转载开关打开的源，正文也完整中译下发。
+3. **筛**——模型按股市口径的精选标准打分（荐股喊单味直接压制），精选进日报流，其余进全量流；同一事件多家报道自动归组，话题星图实时生长。
+4. **报**——每天一份《市场日报》（政策 / 宏观 / 公司 / 国际 / AI 安全 / 观点六栏），加一面电视直播墙与 AI 陪看，把「看新闻」补上「看直播」。
 
-## 为什么开源
+## 功能总览
 
-这半年，很多做法律、做 HR、做金融、做贵金属的朋友问我，能不能也给他们的行业做一个。
+- **市场观测台（收录回放）**：材料扫描 → 话题星图 → 扫描阅读一卡三列，机械蜘蛛逐卡爬行、逐字段点触，读完向星图节点射出彗星线程，节点计数 +1。回放的是今天真实发生的收录过程，不是动画演示。
+- **话题星图**：粒子点云 + 分档字号 + 全节点常驻计数（千分位）+ 星盘刻度环；扫描命中时名称与计数同变红，话题聚焦、落点涟漪、扫描回响三层动态。
+- **新闻流（河流图）**：来源 → 话题 → 机构的桑基式河流，按天回放窗口。
+- **热点观察**：同一事件的多家声音聚成一个热点，附各家原文。
+- **电视直播窗 + AI 陪看**：三席真直播同页预播、点选全屏带声；陪看按频道作用域**按需生成**（点开才生成、5 分钟内复用、没人看时零模型支出），要点与站内同期报道互相印证，文末标注涉及标的（如 SPCX）。
+- **全量中文化**：标题、摘要、话题页「最新一条」、详情页「同一事件」全部中文字段渲染，逐条可与接口字段对照。
+- **全文模式**：`site_fulltext` 逐源开关，全 67 源已开（私人使用）；详情页正文按原站量测排版（19px / 1.9 行高 / 两端对齐）。
+- **PWA**：手机端可「添加到桌面」，standalone 打开，品牌图标全套（暖纸底 + 观潮字标 + 红点）。
+- **标的检索层**：财经信息按标的留存可检索，首个样本 SPCX / SpaceX（相关快讯、申报、研报自动聚合）。
+- **市场日报**：每日出刊，题头「市场日报」，美股、港股必须在内。
 
-我做不了。我不懂你们的行业，不知道哪些信源有用，也不知道什么样的消息，对你们来说才叫热点。
+## 信源体系（67 源）
 
-但你们懂。
+- **直采**：RSS 与官方 JSON 接口（美联储、证监会、东方财富快讯、华尔街见闻、新浪 7×24、arXiv q-fin 等）。
+- **推送**：隐身抓取后经 ingest 接口入池——南华早报、巴伦周刊、港交所披露易、巨潮资讯、SEC EDGAR（8-K / 10-Q / 10-K 一手申报）、YouTube 三频道动态。
+- **讨论源**（只供热点讨论证据、永不成条）：东方财富股吧、雪球、Hacker News。
+- **双轮定时**：全量每 30 分钟一轮，快讯子集（新浪 7×24、华尔街见闻）每 5 分钟一轮。
 
-既然我没办法满足所有人，那就把火种交到大家自己手上。
+分类六栏：**政策 / 宏观 / 公司 / 国际 / AI 安全 / 观点**。
 
-## 说在前面
+---
 
-- **我不是专业的开发者。** 我是设计师出身，半年前还看不太懂代码。这套代码是我和 AI 一起重写的，比以前干净了很多，但一定还有写得不好的地方。发现问题欢迎提 Issue，我不一定能很快回复，先说声抱歉。
-- **这是 AIHOT 的引擎。** 它和 AIHOT 线上跑的是同一份引擎代码，同步时直接从线上导出，不是精心打磨的通用框架。以后 AIHOT 的更新，我会尽量同步过来，但没法保证每一次都同步。模型榜、Codex 重置监控、主题页的大事记这些只对 AI 行业有意义的功能，以及 AIHOT 自己的运营工具，只留在 AIHOT 上。
-- **里面没有 AIHOT 的信源名单和运营数据。** 仓库带了 18 个公开的海外 AI 资讯源做示范，够你跑起来看效果；真正的信源，要换成你自己行业的。
-- **请不要用 AIHOT 的名字和 Logo。** 换上你自己的名字，它就是你的站。
+## 心得：这台站是怎么炼成的
 
-## 它是怎么工作的
+这一节不是宣传话，是施工日志里沉淀下来的真经验——每一条都交过学费。
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/how-dark.png">
-  <img src="docs/assets/how-light.png" alt="六步：采集、预筛、两次评分、写作、聚簇、热点与成刊" width="100%">
-</picture>
+### 1. 先在云端跑通，再让真机装一次
 
-一条资料从信源进来，先判重，再预筛；可能重要的独立打两次分，写好中文标题和摘要，和别的报道聚成事件，算进热度。X 帖子没有正文或只有链接时，保留原帖的链接和图片，不调用写作或翻译模型。分数过了门槛、又不是精选里已有新闻的重复，才进精选；日报按规则编出当天要闻，周报、月报再从日报里汇编。每一步的提示词都在 [`industry/prompts/`](industry/prompts/)，改标准不用改代码。详见 [精选与校准](docs/selection.md)。
+新功能、修复，一律先在云端用真配置、真模型、真数据端到端跑通，拿到帧和数字证据，再让生产机一次性安装。把用户当测试陪跑是最贵的做法：他跑一条命令、贴一段输出、你猜一个原因，一晚上就没了。云端自验的代价是搭一套可弃的复刻环境（嵌入式 PostgreSQL + 原生拉起 worker / api / web），回报是每次交付都是结论，不是问题。
 
-### 聚簇与热点
+### 2. 「全部动态为空」时，先查数据面，别怀疑引擎
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/cluster-dark.png">
-  <img src="docs/assets/cluster-light.png" alt="五个来源的报道聚成一个事件，事件进入当前热点榜" width="100%">
-</picture>
+中文化上线那晚，页面回放纹丝不动，一度以为动效引擎坏了。查到底：模型 ID 写错了一位（目录里不存在的型号），分析请求全 404，库里没有新刊，页面当然没东西可演。**引擎无病，病在数据面。** 从此定下证据顺序：先看库里的刊数、回执、接口字段，再看渲染。
 
-同一件事，官网发一篇、媒体转十篇、X 上吵一天，读者只需要看到一次。AIHOT 把它们聚成一个**事件**：先用标题摘要的向量（没配向量服务时比文字重合度）在最近两周里找候选，再让模型判断是同一件事、后续进展，还是两件事；拿不准的合并，写入前再让模型复核一遍（复核可以单独换一家模型，设 `GROUP_REVIEW_MODEL`）。
+同类教训还有一桩：抽样验收时帧里标题全是英文，与「译文 56/56」备案矛盾——最后查实是云端 web 构建产物比源码旧一版，旧 JS 根本没写取译文字段的逻辑。**构建产物与源码不是一回事，验收前先确认构建新鲜度。**
 
-**热度**按事件算，不按文章算：48 小时内，每个独立来源只算一次，24 小时减半。重复抓取不会多算，一家媒体发十篇也只算一次，所以排在前面的，是真正有很多人在说的事。
+### 3. 抓取的世界里，「能打开」和「能解析」是两回事
 
-### 速度
+推送器第一版用了隐身浏览器优先的策略，结果把 RSS / JSON 响应包成 HTML 再喂给解析器，南华早报、华尔街见闻双双解析失败——而裸请求反而全通。修法是拆两条链：
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/perf-dark.png">
-  <img src="docs/assets/perf-light.png" alt="AIHOT 线上实测：页面中位数 10 毫秒，95% 在 50 毫秒内；接口中位数 6 毫秒，95% 在 12 毫秒内；文章页 95% 在 14 毫秒内" width="100%">
-</picture>
+- `fetch_raw`（订阅源 / 接口 / 信号）：普通请求 → curl_cffi 指纹 → 隐身 → 动态渲染，能拿到原始字节就不升级；
+- `fetch_rendered`（正文页）：才走浏览器渲染。
 
-## 你会得到什么
+配套细节：lxml 容错解析救回不规范 XML；雪球要先开首页种 cookie 再抓接口；SEC EDGAR 必须带合规声明的 User-Agent（联系邮箱形态），否则 403——规矩先于技术。
 
-| | |
-|---|---|
-| **六种信源** | RSS、网页列表、JSON 接口、X 账号、微信公众号，以及你自己脚本推送进来的内容。信源分三级（官方一手、官方账号与准官方、媒体与个人），各级入选门槛不同；抓取频率按产出自动调整 |
-| **精选** | 预筛，同一份评分标准独立打两次分，再按信源分级的门槛决定入选；同一条新闻只占一条，换个说法的重复不进。提示词和门槛全部公开，全部可以改；用你自己标注的样本在 SelectBench 里校准 |
-| **写作** | 中文标题、答案先行的摘要、推荐理由，外文全文翻译；分类、标签和新闻事实单独抽取；防止模型把原文没提到的公司写进标题 |
-| **聚簇** | 不同来源报道的同一件事聚成一个事件，后续进展挂在同一个事件下，事件页有综述；进展和报道时间线可一起切换“最新在前”或“最早在前”；人工改过的归属不会被覆盖 |
-| **热点** | 按事件算热度：独立来源越多越靠前，X 上的讨论也算进来；和 6 小时前比，涨得快的标上升，新出现的标“新” |
-| **日报、周报、月报** | 每天出日报（默认 08:00），按规则编出当天要闻：一件事一条，报过的事只在有新进展时跟进，不调模型。每周一出周报、每月 1 日出月报（默认 10:00、10:30），从日报里汇编，模型只写总述和栏目导读。几点出刊在 `site/site.ts` 的 `EDITION_TIMES` 里改 |
-| **主题与搜索** | 公司、方向、内容形态三类主题页；标题摘要搜索和全文相关搜索 |
-| **阅读设置** | 深浅色外观、网站默认字体或浏览器默认字体；收藏和阅读设置只保存在本机，可以导出、导入备份 |
-| **给 Agent 用** | RSS（精选、全部、全文、日报、周报、月报）、公开 API、MCP、Agent Markdown、`llms.txt`，同一份内容给人看也给 Agent 用 |
-| **后台** | 信源管理与试抓、内容诊断与人工评分更正、精选评测、每一步单独换模型、付费服务的预算熔断、运行记录与告警 |
+### 4. 沙箱和真机的网络是两个世界
 
-## 看一眼
+开发沙箱的 DNS 把公网域名全解析到 198.18.x 保留段（Surge 式假 IP 环境），框架的 SSRF 护栏会把这类解析全部拦下——在沙箱里「采不到」不等于源有问题。解法：出网统一走环境变量注入的 egress 代理（`EGRESS_PROXY_URL`），新源的真跑验证放到网络正常的机器上，结论分开记账。
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/shots-dark.png">
-  <img src="docs/assets/shots-light.png" alt="首页的每日精选，关于页的信源河" width="100%">
-</picture>
+### 5. 截图会骗你，运行实测不会
 
-<p align="center"><sub>截图来自用示范信源跑起来的本地站，站名是默认的 MyHOT。</sub></p>
+星图节点到底带不带常驻计数，团队里吵过两轮：静态截图放大看像没有，规格一度据此裁定。最后抓了原站连续三帧运行画面：计数一直在，话题「System Card」还随扫描从 31 涨到 32。**证据等级从此定死：原站源码审计 > 放大截图 > 全景推断 > 口头转述；计数这类事，实测运行证据压过一切截图推断。**
 
-## 跑起来
+### 6. 读者开页，绝不烧钱
 
-想创建自己的独立站点，可以先点 [Use this template](https://github.com/KKKKhazix/AIHOT/generate)，再克隆你生成的仓库。想持续合并上游更新或贡献代码，建议先 Fork。下面的命令适合直接试用。
+这是写进代码仓库的硬规矩：模型只在 worker 的任务里调用。AI 陪看最初是定时生成全量卡片，后来改成「结论跟着观看走」：端点只负责把生成任务入队（pg-boss），卡龄 5 分钟内直接复用，冷生成约 8 秒，30 分钟一次的定时任务只做预热兜底且带水位门——静默期零模型支出。每次模型调用都落回执（receipts）记账、过预算门（budgets）。
 
-需要 [Docker](https://docs.docker.com/get-started/get-docker/)、[Node.js 24](https://nodejs.org/en/download)（运行 `init-env` 生成配置要用），和一个 OpenAI 兼容的模型 API Key（DeepSeek、千问、智谱都可以）。
+### 7. 审美只许在自己的语言里进化
 
-`init-env` 默认按 DeepSeek 配置。用千问、智谱等别家，照 `.env.example` 里的例子改 `.env` 的 `LLM_BASE_URL`、`LLM_MODEL` 和 `LLM_EXTRA_JSON`；用推理模型（先想再答）时，还要设 `LLM_REASONING_TOKENS` 给推理留出输出额度。
+中途试过一版「苹果风」互动样板：滚动叙事 + 粒子辉光，技术上都实现了，看起来也不差——但被一句「还不如以前好看」否决。教训钉死：**本站的语言是报纸风**——纸面气质、编辑排版、栏线秩序、字阶层级、留白呼吸。之后所有美化只做一件事：拿原站量测值逐项对齐（版心 1084px、纸色 #f5f4f0、标题 36px/600、栏目头 15px/600、卡片圆角 13px + 暖柔影、卡片内边距 18/19/14），量出来的差距逐条销账。动效只许服务报纸风，不许再引入科幻皮。
+
+### 8. 推仓纪律：逐字节验、缺一不推
+
+代码托管在 GitHub，本地工作树不是 git 仓库，靠 API 逐批推送。规矩是：
+
+- 推后逐文件拉远端原文，按 git blob SHA 与本地比对，全 MATCH 才算落地；客户端超时先查远端，**绝不盲目重推**（超时多半是服务端已执行完）。
+- 二进制文件（图标 PNG / ICO）走不通文本通道，固定走网页上传单独成 commit。
+- 每批推前做**清单差集核对**：施工组申报清单 × 实推清单，并对每个新符号追到它的定义文件。直播窗那批就漏过一个图标定义文件，云机构建当场抓住——从此差集核对入验收门禁，缺一不推。
+
+### 9. 翻译质量要抽样，不要感觉
+
+全量中文化验收不是看个大概：抽样逐条对照接口 `titleZh` 与页面渲染标题，要求 15/15 一致、链接指英文原文。抽样还攒下译文瑕疵样本（如个别标题残留未译片段），进精选校准的证据池——改门槛要有样本，不凭手感。
+
+---
+
+## 教程
+
+### 环境
+
+- Docker 环境（Mac 推荐 OrbStack，亦可用 Docker Desktop / Linux Docker）。
+- 一个大模型 API（OpenAI 兼容端点即可）。本站现用千问 MaaS：`qwen3.7-plus`，关思考链（`enable_thinking=false`）保速度。
+
+### 快速开始
 
 ```bash
-git clone https://github.com/KKKKhazix/AIHOT.git myhot
-cd myhot
-node scripts/init-env.ts --llm-key <你的模型 API Key>
-docker compose up -d --build
+git clone https://github.com/ZHANGFA88/guanchao.git
+cd guanchao
+
+# 1) 生成 .env 并填入模型三行
+node scripts/init-env.ts
+#   LLM_BASE_URL=你的端点
+#   LLM_API_KEY=你的Key
+#   LLM_MODEL=qwen3.7-plus
+
+# 2) 一键点火（建库、迁移、种子、起服务）
+bash scripts/ignite.sh
+# 或手动：docker compose up -d --build
+
+# 3) 打开
+open http://localhost:3000
 ```
 
-打开 <http://localhost:3000>。后台在 `/admin`，管理员密码在 `.env` 的 `ADMIN_PASSWORD` 里。一两分钟后开始有内容，第一次导入的资料大约半小时处理完。
+模型切换只改 `.env` 三行（`docs/PROVIDERS.md` 有 OpenAI / Gemini 兼容端点 / 千问 / DeepSeek 四套预设）。没填 Key 时模型调用关闭、精选为空，其余功能照常。
 
-机器上没有 Node、服务器在中国大陆、要配域名和 HTTPS，或者不用 Docker、直接在 Linux、macOS 上跑（Windows 用 WSL2），见 [部署](docs/deploy.md)。
+### 启用推送器（被墙信源专用）
 
-站点跑起来后，打开 `/agent` 可以复制 MCP、RSS 或 API 的接入方式；只能读网页的 Agent 从 `/api/v1/agent` 开始；接口说明在 `/openapi-v1.json`。
+```bash
+pip install scrapling patchright
+patchright install chromium
 
-## 把它改成你的行业
+# .env 里加一行（与服务端一致的令牌）
+# INGEST_TOKEN=<随机串>
 
-最省事的办法：打开你的 Agent（Claude Code、Codex 都可以），把这个仓库交给它，然后说：
-
-```text
-请读 AGENTS.md 和 docs/customize.md，把这个站改成「XX 行业」的热点站。
-我关心的是：……（写你想盯的信源、你觉得什么消息重要、什么不重要，越具体越好）。
-改完帮我跑 npm run typecheck、npm test 和 node scripts/smoke.ts，并告诉我还需要我自己决定哪些事。
+bash scripts/setup-scrapling-cron.sh   # 装双轮定时：全量 30 分钟 / 快讯 5 分钟
+python3 scripts/push-scrapling.py --dry-run   # 先干跑验通再正式推
 ```
 
-要改的东西几乎都在 [`site/`](site/) 和 [`industry/`](industry/) 这两个文件夹里，代码基本不用动：
+SEC EDGAR 需额外在推送器环境注入联系声明：`EDGAR_CONTACT_UA=你的联系邮箱`（SEC 合规要求，值不落仓）。
 
-| 文件 | 改什么 |
+### 假 IP / 代理环境注意
+
+若所在网络是 Surge 类假 IP 环境（DNS 解析到 198.18.x），在 `.env` 加：
+
+```
+EGRESS_PROXY_URL=http://host.orb.internal:6152   # 换成你的代理地址
+```
+
+此项只写本地 `.env`，不要提交进仓库模板。
+
+### 日常运维判读
+
+- **日报判质量六点**：①标题摘要全中文无残留 ②链接点开是英文原文 ③美股港股都在 ④精选无荐股喊单味 ⑤题头「市场日报」 ⑥真数据（有收录数、有话题）非模拟。
+- **逐源体检**：看每源最近入池量；长缺口先查该源取数链落在哪一级（普通请求 / 指纹 / 隐身 / 渲染），再查定时任务与令牌。
+- **数据卷**：`aihot_data` 卷是全站数据，别删。
+
+### 目录速览
+
+| 路径 | 是什么 |
 |---|---|
-| `site/site.ts` | 站名、行业词、出刊时间、首页文案、关于页、条目与日报周报月报上的说法、公开接口的分类 |
-| `industry/taxonomy.ts`、`industry/topics.json` | 分类、标签、主题 |
-| `industry/sources.json` | 首次启动时导入的信源 |
-| `industry/prompts/` | 精选标准和写作要求。**你的行业 KnowHow，就写在这里** |
-| `industry/selection.ts` | 入选门槛 |
-| `site/models.ts` | 每一步默认用哪个模型（不改也行：都用 `.env` 里配的那一个） |
-| `site/brand/`、`site/pages/`、`site/public/`、`site/changelog.json` | 图标与 Logo，使用规则和隐私说明，`robots.txt` 这类发布在网站根目录的文件，更新日志 |
-| `modules/` | 框架里没有、只有你的站要的功能，做成模块放在这里，见 [架构](docs/architecture.md#模块) 的“模块” |
+| `apps/web` | 前端（React Router；观测台、星图、直播窗都在这） |
+| `apps/api` | 公开 API（只读 publication 层） |
+| `apps/worker` | 采集后处理：分析、翻译、归组、日报、陪看生成 |
+| `packages/backend` | 后端核心（publication 读取层、jobs、reports） |
+| `industry/` | 行业层：信源名单 `sources.json`、分类、精选标准 |
+| `site/` | 站点层：站名文案、品牌图标、条款页 |
+| `scripts/` | 点火、推送器、定时安装、初始化 env |
+| `docs/` | 规格与运维文档（SPEC-OBSERVATORY.md 为观测台规格真源） |
 
-最值得花时间的是评分标准（`industry/prompts/selection-score.md`）和门槛：拿一两百条你自己标注过的资料，用 `scripts/eval-selection.ts` 跑一遍，看它选得准不准，再回去改。怎么做写在 [精选与校准](docs/selection.md) 里。
+---
 
-## 文档
+## 致谢
 
-| 文档 | 内容 |
-|---|---|
-| [把它改成你的行业](docs/customize.md) | 站名、分类、主题、信源、提示词、门槛、模型、品牌，一步一步来 |
-| [信源](docs/sources.md) | 六种信源怎么配，分级和全文，抓取频率，旧文和存档，固定起点 `publishedAfter`，外部推送接口 |
-| [精选与校准](docs/selection.md) | 一条资料怎么变成精选、怎么编进日报周报月报，怎么用自己的样本校准 |
-| [事件归组与关系评测](docs/grouping.md) | 事件关系怎么判断，怎么用自己标注的成对样本评测 |
-| [综述评测](docs/story-digest-evaluation.md) | 改事件综述提示词前，怎么在同一批事件上并排比较 |
-| [部署](docs/deploy.md) | Docker、域名和 HTTPS、中国大陆、更新、备份、花多少钱，不用 Docker 时在 Linux、macOS（Windows 用 WSL2）上怎么跑 |
-| [架构](docs/architecture.md) | 三个进程、几条不变的规则、目录、模块、数据库迁移、对外出口、测试 |
+本站基于开源框架 **AIHOT**（作者 KKKKhazix，MIT 许可）二次开发——感谢原作者把完整的采集 / 精选 / 发布框架开源出来，观潮的信源体系、精选口径、界面与全部定制都在此之上生长。数据形态参考了 AISafetyHot（wuyoscar）；隐身抓取使用 Scrapling（D4Vinci）。一并致谢所有被依赖的开源组件。
 
-技术栈：Node.js 24 · TypeScript · React Router（服务端渲染）· Fastify · PostgreSQL · pg-boss · Tailwind CSS · Docker Compose。
-
-## 交流与贡献
-
-部署和使用问题到 [问答区](https://github.com/KKKKhazix/AIHOT/discussions/categories/q-a)，新想法到 [想法交流区](https://github.com/KKKKhazix/AIHOT/discussions/categories/ideas)，欢迎在 [作品展示区](https://github.com/KKKKhazix/AIHOT/discussions/categories/show-and-tell) 分享你做出的行业热点站。
-
-发现 Bug 或有明确的功能建议，可以 [提交 Issue](https://github.com/KKKKhazix/AIHOT/issues/new/choose)。准备改代码前，先看 [贡献说明](CONTRIBUTING.md)；安全漏洞请走 [私密报告入口](SECURITY.md)。
-
-## 最后
-
-AIHOT 曾经只是我无数个深夜里，一个很小、很小的念头。
-
-我不知道它会被改成什么样子，会走到多远的地方。但这可能就是开源最浪漫的地方。
-
-剩下的路，就交给你们了。
-
-<p align="right">—— 数字生命卡兹克</p>
-
-## 许可
-
-代码使用 [MIT 许可证](LICENSE)。AIHOT 的名字和 Logo 不在许可范围内。字体有自己的许可，见 [NOTICE](NOTICE)。
+License：沿用原框架的 MIT 许可，见仓库 `LICENSE`。
