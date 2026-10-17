@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""市况台浏览器采集推送器：抓框架直采过不去的信源，把标题+链接+时间(+摘要)推进 external 信源。
+"""观潮浏览器采集推送器：抓框架直采过不去的信源，把标题+链接+时间(+摘要)推进 external 信源。
 
 四种模式：
   feed  —— RSS 被指纹墙挡住（SCMP、巴伦）：用隐身浏览器打开 feed 地址，仍按 RSS 解析。
@@ -12,7 +12,7 @@
 抓取优先 Scrapling StealthyFetcher（真实浏览器指纹），失败回退 DynamicFetcher，再回退普通请求。
 服务端按 url 去重，可重复运行；建议每 30 分钟跑一次（见 docs/SCRAPLING.md）。
 
-用法（在市况台仓库根目录）：
+用法（在观潮仓库根目录）：
     python3 -m venv .venv-scrapling && .venv-scrapling/bin/pip install "scrapling[fetchers]"
     .venv-scrapling/bin/scrapling install          # 首次下载隐身浏览器（Camoufox）
     .venv-scrapling/bin/python scripts/push-scrapling.py [--api http://127.0.0.1:3001] [--dry-run]

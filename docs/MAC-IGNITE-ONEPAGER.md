@@ -1,4 +1,4 @@
-# Mac 点火一页纸（市况台）
+# Mac 点火一页纸（观潮）
 
 三步，约 10 分钟。详细版见 `docs/IGNITE.md`，模型说明见 `docs/PROVIDERS.md`。
 前置（先备齐，缺了看 `docs/IGNITE.md` 的「前置条件」）：**Docker Desktop 已安装并启动**（菜单栏鲸鱼图标稳定）、**Node.js LTS**、**git**。

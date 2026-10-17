@@ -35,4 +35,4 @@ python3 -m venv .venv-scrapling
 bash scripts/setup-scrapling-cron.sh                             # 装成每 30 分钟自动跑
 ```
 
-注意：推送器走 `.env` 里的 `INGEST_TOKEN`，且市况台服务要在运行中；feed 模式的三个源必须靠隐身浏览器，在无浏览器的环境里会失败跳过（其余源不受影响）。
+注意：推送器走 `.env` 里的 `INGEST_TOKEN`，且观潮服务要在运行中；feed 模式的三个源必须靠隐身浏览器，在无浏览器的环境里会失败跳过（其余源不受影响）。
