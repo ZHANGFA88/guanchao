@@ -44,8 +44,8 @@ export function meta({ loaderData }: Route.MetaArgs) {
 function SectionHead({ no, title, note, to, toLabel }: { no: string; title: string; note?: string; to?: string; toLabel?: string }) {
   return (
     <div className="mb-3 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-      <span className="text-[13px] font-bold tracking-[0.12em] text-amber-ink">{no} /</span>
-      <h2 className="text-[21px] font-bold">{title}</h2>
+      <span className="text-[13px] font-semibold tracking-[0.12em] text-amber-ink">{no} /</span>
+      <h2 className="text-[15px] font-semibold">{title}</h2>
       {note && <span className="text-[13px] text-ink-3">{note}</span>}
       {to && <Link to={to} className="ml-auto text-[13px] font-medium text-ink-2 hover:text-accent-ink">{toLabel} ↗</Link>}
     </div>
@@ -60,7 +60,7 @@ export default function Home() {
       <div className="flex flex-wrap items-start gap-4">
         <div className="min-w-0">
           <p className="text-[11px] font-bold tracking-[0.3em] text-amber-ink">MARKET · OBSERVATORY</p>
-          <h1 className="mt-1.5 text-[36px] font-extrabold leading-none">总览</h1>
+          <h1 className="mt-1.5 text-[36px] font-semibold leading-[1.3]">总览</h1>
           <p className="mt-2 text-[14.5px] text-ink-3">{SITE.subject}新闻与研究进展 · 每日精选与日报</p>
           <p className="mt-3 text-[15px]">
             今天收录

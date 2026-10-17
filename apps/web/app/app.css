@@ -65,7 +65,7 @@
   --radius-mark: 5px;
   --radius-control: 8px;
   --radius-tile: 10px;
-  --radius-card: 12px;
+  --radius-card: 13px;
   --radius-panel: 14px;
   --radius-sheet: 16px;
 
@@ -93,22 +93,22 @@
   --gutter-r: max(16px, env(safe-area-inset-right));
   color-scheme: light;
   /* Warm paper (the observatory skin): cream ground, ink-brown text, burnt-orange accent. */
-  --bg: #f7f2e8;
+  --bg: #f5f4f0;
   --bg-sunk: #efe8d8;
   --bg-muted: #e9e0cb;
   --surface: #fffdf9;
   --surface-2: #fffefb;
   --raised: #fffdf9;
-  --sidebar: #faf5ea;
+  --sidebar: #f5f4f0;
   --daybar: #f0e9da;
   --field: #f1ead9;
-  --ink: #262019;
-  --ink-2: #3d362a;
-  --ink-3: #6f6450;
-  --ink-4: #8d8171;
-  --line: #e2d9c4;
-  --line-strong: #d5c9ab;
-  --line-soft: #ece4d0;
+  --ink: #141412;
+  --ink-2: #3c3c37;
+  --ink-3: #55544f;
+  --ink-4: #8a877c;
+  --line: rgba(20, 20, 18, 0.16);
+  --line-strong: rgba(20, 20, 18, 0.28);
+  --line-soft: rgba(20, 20, 18, 0.09);
   --accent: #bc5212;
   --accent-ink: #a3440d;
   --accent-soft: rgba(188, 82, 18, 0.09);
@@ -127,12 +127,12 @@
   --rank-2: #a3642f;
   --rank-3: #96702e;
   --rank-rest: #6b7684;
-  --shadow-card: 0 1px 2px rgba(32, 42, 48, 0.025);
-  --shadow-card-hover: 0 3px 12px rgba(32, 42, 48, 0.055);
+  --shadow-card: 0 6px 25px rgba(114, 78, 48, 0.024);
+  --shadow-card-hover: 0 8px 28px rgba(114, 78, 48, 0.05);
   --shadow-soft: 0 4px 12px rgba(28, 39, 51, 0.06);
   --shadow-thumb: 0 1px 2px rgba(28, 39, 51, 0.1), 0 1px 1px rgba(28, 39, 51, 0.04);
   --shadow-pop: 0 12px 32px rgba(28, 39, 51, 0.12);
-  --prose-ink: #26323a;
+  --prose-ink: #141412;
   --code-bg: #f6f7f4;
   --code-keyword: #006d77;
   --code-string: #2f6f44;
@@ -590,3 +590,13 @@
 .obs-log-in { animation: obs-log-in 0.5s cubic-bezier(0.25, 1, 0.5, 1) both; }
 .obs-beacon { animation: obs-beacon 2s ease-in-out infinite; }
 .obs-rise { animation: obs-rise 0.45s cubic-bezier(0.25, 1, 0.5, 1) both; display: inline-block; }
+
+
+/* ---------------------------------------------------------------------------
+   详情页阅读版式（美化迁移 2026-10-17：令牌已全局，此处仅余本页版式）
+   --------------------------------------------------------------------------- */
+.beauty-scope { max-width: 1084px; }
+.beauty-scope h1[data-page-title] { font-weight: 600; }
+.beauty-scope article section:first-of-type > p { font-size: 19px; line-height: 1.9; text-align: justify; }
+.beauty-scope .prose { font-size: 19px; line-height: 1.9; text-align: justify; }
+.beauty-scope .prose h2, .beauty-scope .prose h3, .beauty-scope .prose h4 { font-weight: 600; }

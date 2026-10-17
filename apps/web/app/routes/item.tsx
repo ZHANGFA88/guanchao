@@ -470,7 +470,7 @@ function ItemView({ item }: { item: SiteItemDetail }) {
   );
 
   return (
-    <div className="mx-auto max-w-[var(--page-max-reading)] pb-8">
+    <div className="beauty-scope mx-auto max-w-[var(--page-max-reading)] pb-8">
       {item.body && <ReadingProgress />}
 
       {/* Phones: back to where the reader came from, the title once it has scrolled away, more actions. */}
