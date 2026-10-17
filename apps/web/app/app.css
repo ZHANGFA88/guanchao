@@ -94,14 +94,14 @@
   color-scheme: light;
   /* Warm paper (the observatory skin): cream ground, ink-brown text, burnt-orange accent. */
   --bg: #f5f4f0;
-  --bg-sunk: #efe8d8;
-  --bg-muted: #e9e0cb;
+  --bg-sunk: #ecebe6;
+  --bg-muted: #e3e1da;
   --surface: #fffdf9;
   --surface-2: #fffefb;
   --raised: #fffdf9;
-  --sidebar: #f5f4f0;
-  --daybar: #f0e9da;
-  --field: #f1ead9;
+  --sidebar: #f8f7f4;
+  --daybar: #ecebe6;
+  --field: #fbfaf7;
   --ink: #141412;
   --ink-2: #3c3c37;
   --ink-3: #55544f;
