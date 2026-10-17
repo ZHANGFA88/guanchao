@@ -1052,6 +1052,122 @@
       "site_fulltext": false,
       "syndicate_fulltext": false,
       "icon_url": "https://www.google.com/s2/favicons?domain=news.ycombinator.com&sz=64"
+    },
+    {
+      "id": "json-em-fastnews",
+      "name": "东方财富快讯（直采）",
+      "kind": "json_list",
+      "config": {
+        "url": "https://np-listapi.eastmoney.com/comm/web/getFastNewsList?client=web&biz=web_724&fastColumn=102&sortEnd=&pageSize=30&req_trace=1",
+        "mode": "json_api",
+        "itemsPath": "data.fastNewsList",
+        "titlePaths": [
+          "title"
+        ],
+        "summaryPaths": [
+          "summary"
+        ],
+        "urlTemplate": "https://finance.eastmoney.com/a/{raw:code}.html",
+        "publishedAtPath": "showTime",
+        "externalIdPath": "code"
+      },
+      "tier": "T1",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 5,
+      "tags": [
+        "快讯"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "icon_url": "https://www.google.com/s2/favicons?domain=eastmoney.com&sz=64"
+    },
+    {
+      "id": "rss-arxiv-qfin",
+      "name": "arXiv q-fin 论文",
+      "kind": "rss",
+      "config": {
+        "feedUrl": "https://export.arxiv.org/api/query?search_query=cat:q-fin.GN+OR+cat:q-fin.ST+OR+cat:q-fin.PM&start=0&max_results=50&sortBy=submittedDate&sortOrder=descending"
+      },
+      "tier": "T2",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 360,
+      "tags": [
+        "研究",
+        "论文"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "icon_url": "https://www.google.com/s2/favicons?domain=arxiv.org&sz=64"
+    },
+    {
+      "id": "push-sina724",
+      "name": "新浪财经7×24快讯（直采）",
+      "kind": "external",
+      "config": {},
+      "tier": "T1",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 5,
+      "tags": [
+        "快讯"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "icon_url": "https://www.google.com/s2/favicons?domain=sina.com.cn&sz=64"
+    },
+    {
+      "id": "push-sec-edgar",
+      "name": "SEC EDGAR 公司申报",
+      "kind": "external",
+      "config": {},
+      "tier": "T1",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 30,
+      "tags": [
+        "公告",
+        "美股",
+        "研究"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "icon_url": "https://www.google.com/s2/favicons?domain=sec.gov&sz=64"
+    },
+    {
+      "id": "push-hkexnews",
+      "name": "港交所披露易公告",
+      "kind": "external",
+      "config": {},
+      "tier": "T1",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 30,
+      "tags": [
+        "公告",
+        "港股"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "icon_url": "https://www.google.com/s2/favicons?domain=hkexnews.hk&sz=64"
+    },
+    {
+      "id": "push-cninfo",
+      "name": "巨潮资讯公告",
+      "kind": "external",
+      "config": {},
+      "tier": "T1",
+      "owner_entity_id": null,
+      "participation_mode": "editorial",
+      "interval_minutes": 30,
+      "tags": [
+        "公告",
+        "A股"
+      ],
+      "site_fulltext": false,
+      "syndicate_fulltext": false,
+      "icon_url": "https://www.google.com/s2/favicons?domain=cninfo.com.cn&sz=64"
     }
   ]
 }

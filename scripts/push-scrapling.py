@@ -32,7 +32,7 @@ import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
 from pathlib import Path
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urlencode, urljoin, urlparse
 
 ROOT = Path(__file__).resolve().parent.parent
 UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36"
@@ -315,6 +315,148 @@ def parse_wallstreetcn(raw: str) -> list[dict]:
     return items
 
 
+# ---------- 第一批新增（2026-10-17 接入单 docs/SOURCE-ACCESS-BATCH1.md） ----------
+EDGAR_UA = "GuanchaoBot/1.0 (+https://github.com/ZHANGFA88/shikuang)"  # SEC 公平访问申报串（架构裁定，不许编造邮箱）
+# 实测（2026-10-17 云端）：SEC 对无邮箱形态的申报串一律 403（URL 串与浏览器 UA 均 403，邮箱形态 200）。
+# 按架构裁定「SEC 明确要求邮箱形式则先停该源、由架构向 owner 索取联系邮箱」：未注入 EDGAR_CONTACT_UA 前跳过本源。
+
+
+def _clean(text: str) -> str:
+    text = re.sub(r"<[^>]+>", "", text or "")
+    return html_lib.unescape(re.sub(r"\s+", " ", text)).strip()
+
+
+def parse_sina724(raw: str) -> list[dict]:
+    """新浪财经 7×24：快讯全文即标题面（与既有快讯源同口径），标题取首句、摘要留全文。"""
+    data = json.loads(raw)
+    feed = (((data.get("result") or {}).get("data") or {}).get("feed") or {}).get("list") or []
+    items = []
+    for it in feed:
+        text = _clean(it.get("rich_text") or "")
+        url = (it.get("docurl") or "").strip()
+        ts = (it.get("create_time") or "").strip()
+        if not text or not url or not ts:
+            continue
+        title = re.split(r"[。！？]", text, maxsplit=1)[0][:120]
+        published = datetime.strptime(ts, "%Y-%m-%d %H:%M:%S").replace(tzinfo=CST).isoformat()
+        item = {"title": title, "url": url, "publishedAt": published}
+        if text != title:
+            item["summary"] = text[:300]
+        items.append(item)
+    return items
+
+
+def parse_edgar_atom(xml_text: str) -> list[dict]:
+    """SEC EDGAR browse-edgar Atom（框架 parse_feed 只认 RSS item，这里单独解 entry）。"""
+    ns = {"a": "http://www.w3.org/2005/Atom"}
+    root = ET.fromstring(_extract_xml(xml_text))
+    items = []
+    for entry in root.findall("a:entry", ns):
+        title = _clean(entry.findtext("a:title", default="", namespaces=ns))
+        link = ""
+        for el in entry.findall("a:link", ns):
+            if el.get("rel") in (None, "alternate"):
+                link = el.get("href") or ""
+                break
+        updated = (entry.findtext("a:updated", default="", namespaces=ns) or "").strip()
+        if not title or not link or not updated:
+            continue
+        published = datetime.fromisoformat(updated.replace("Z", "+00:00")).astimezone(timezone.utc).isoformat()
+        items.append({"title": title[:200], "url": link, "publishedAt": published})
+    return items
+
+
+def collect_edgar() -> list[dict]:
+    """8-K / 10-Q / 10-K 三路合并；请求必须带申报串，间隔 0.6s 守 SEC 速率礼仪。
+
+    申报串优先取环境变量 EDGAR_CONTACT_UA（owner 提供的真实联系邮箱形态，如
+    "Guanchao Research you@example.org"）；未提供时按架构裁定停源跳过，不许自行拼邮箱。
+    """
+    import os
+    import time
+
+    ua = os.environ.get("EDGAR_CONTACT_UA", "").strip()
+    if not ua:
+        print("push-sec-edgar skipped: SEC requires an email-shaped declared UA; "
+              "awaiting owner contact via architecture (set EDGAR_CONTACT_UA to enable)")
+        return []
+    items: list[dict] = []
+    for form in ("8-K", "10-Q", "10-K"):
+        url = ("https://www.sec.gov/cgi-bin/browse-edgar?action=getcurrent"
+               f"&type={form}&company=&dateb=&owner=include&count=20&output=atom")
+        req = urllib.request.Request(url, headers={"User-Agent": ua, "Accept": "application/atom+xml"})
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            items.extend(parse_edgar_atom(resp.read().decode("utf-8", "replace")))
+        time.sleep(0.6)
+    return items
+
+
+def parse_hkex(raw: str) -> list[dict]:
+    """披露易 titleSearchServlet：result 是字符串化 JSON，二次解包。日期口径 HKT=+08。"""
+    data = json.loads(raw)
+    result = data.get("result")
+    rows = json.loads(result) if isinstance(result, str) else (result or [])
+    items = []
+    for r in rows:
+        title = _clean(r.get("TITLE") or r.get("SHORT_TEXT") or "")
+        link = (r.get("FILE_LINK") or "").strip()
+        ts = (r.get("DATE_TIME") or "").strip()
+        if not title or not link or not ts:
+            continue
+        url = urljoin("https://www1.hkexnews.hk", link)
+        published = datetime.strptime(ts, "%d/%m/%Y %H:%M").replace(tzinfo=CST).isoformat()
+        stock = " ".join(x for x in [(r.get("STOCK_CODE") or "").strip(), _clean(r.get("STOCK_NAME") or "")] if x)
+        item = {"title": title[:200], "url": url, "publishedAt": published}
+        if stock:
+            item["summary"] = stock[:300]
+        items.append(item)
+    return items
+
+
+def collect_hkex() -> list[dict]:
+    today = datetime.now(CST).date()
+    frm = (today - timedelta(days=1)).strftime("%Y%m%d")
+    to = today.strftime("%Y%m%d")
+    url = ("https://www1.hkexnews.hk/search/titleSearchServlet.do?sortDir=0&sortByOptions=DateTime"
+           "&category=0&market=SEHK&stockId=-1&documentType=-1"
+           f"&fromDate={frm}&toDate={to}&title=&searchType=1&t1code=-2&t2code=-2&rowRange=100&lang=EN")
+    return parse_hkex(fetch_plain(url))
+
+
+def collect_cninfo() -> list[dict]:
+    """巨潮 hisAnnouncement：form POST，深沪两市各一页；近 24h、总量上限 200（接入单口径）。"""
+    today = datetime.now(CST).date()
+    se_date = f"{today - timedelta(days=1)} ~ {today}"
+    items: list[dict] = []
+    for column, plate in (("szse", "sz"), ("sse", "sh")):
+        body = urlencode({
+            "pageNum": 1, "pageSize": 100, "column": column, "tabName": "fulltext", "plate": plate,
+            "stock": "", "searchkey": "", "secid": "", "category": "", "trade": "", "seDate": se_date,
+        }).encode()
+        req = urllib.request.Request(
+            "https://www.cninfo.com.cn/new/hisAnnouncement/query", data=body,
+            headers={"User-Agent": UA, "Content-Type": "application/x-www-form-urlencoded",
+                     "X-Requested-With": "XMLHttpRequest",
+                     "Referer": "https://www.cninfo.com.cn/new/commonUrl/pageOfSearch?url=disclosure/list/search"})
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            data = json.loads(resp.read().decode("utf-8", "replace"))
+        for a in data.get("announcements") or []:
+            title = _clean(a.get("announcementTitle") or "")
+            adj = (a.get("adjunctUrl") or "").strip()
+            ts = a.get("announcementTime")
+            if not title or not adj or not ts:
+                continue
+            published = datetime.fromtimestamp(int(ts) / 1000, tz=timezone.utc).isoformat()
+            item = {"title": title[:200], "url": "http://static.cninfo.com.cn/" + adj, "publishedAt": published}
+            sec = " ".join(x for x in [(a.get("secCode") or "").strip(), (a.get("secName") or "").strip()] if x)
+            if sec:
+                item["summary"] = sec[:300]
+            items.append(item)
+            if len(items) >= 200:
+                return items
+    return items
+
+
 # ---------- signal 解析 ----------
 def parse_hn() -> list[dict]:
     """HN 官方 Firebase 接口（免费免 Key）：头条里分数达标的才推，标题就是讨论帖标题。"""
@@ -493,6 +635,15 @@ def main() -> None:
     jobs.append(("push-guba", "东方财富股吧", collect_guba))
     jobs.append(("push-hn", "Hacker News 讨论", parse_hn))
     jobs.append(("push-xueqiu", "雪球讨论", lambda: parse_xueqiu(fetch_xueqiu(XUEQIU_TIMELINE))))
+    jobs.append(("push-sina724", "新浪财经7×24快讯",
+                 lambda: parse_sina724(fetch_raw("https://zhibo.sina.com.cn/api/zhibo/feed?zhibo_id=152&page=1&page_size=30&type=0"))))
+    jobs.append(("push-sec-edgar", "SEC EDGAR 公司申报", collect_edgar))
+    jobs.append(("push-hkexnews", "港交所披露易公告", collect_hkex))
+    jobs.append(("push-cninfo", "巨潮资讯公告", collect_cninfo))
+
+    if "--only" in sys.argv:
+        keep = set(sys.argv[sys.argv.index("--only") + 1].split(","))
+        jobs = [j for j in jobs if j[0] in keep]
 
     for sid, name, run in jobs:
         try:

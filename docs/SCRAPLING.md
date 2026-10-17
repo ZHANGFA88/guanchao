@@ -1,4 +1,4 @@
-# 浏览器采集：推送通道（16 个 external 信源）
+# 浏览器采集：推送通道（20 个 external 信源）
 
 框架的直采（RSS/网页列表）过不去的源，走「浏览器/接口抓取 → 推送入库」这条通道：脚本在本机（Mac）上把标题、链接、时间（、摘要）推进 `/api/ingest/items`，与财经快讯推送器同一条路。服务端按 url 去重，可重复运行。信源在 `industry/sources.json` 里注册为 `kind: "external"`，框架采集器会跳过它们、只等推送。
 
@@ -8,7 +8,7 @@
 |---|---|---|
 | feed | RSS：普通请求优先拿原始字节；403/429 时依次升级 curl_cffi（chrome 指纹伪装）→ 隐身浏览器 → 动态渲染 | 南华早报 SCMP 商业/香港（Mac 上普通请求直连即通、各 50 条）、巴伦周刊（四路均 403，如实跳过） |
 | page | 无可用 RSS：隐身浏览器打开列表页/首页，按文章链接规律抽标题+链接 | 第一财经、财新网、每日经济新闻、证券时报、FT中文网、21世纪经济报道、经济观察报 |
-| api | 站点公开 JSON 接口：普通请求优先读原始 JSON | 华尔街见闻快讯 |
+| api | 站点公开 JSON 接口：普通请求优先读原始 JSON | 华尔街见闻快讯、新浪财经7×24（框架 SSRF 拦其域名解析故走推送）、SEC EDGAR（browse-edgar Atom 三路合并，UA 用申报串 `GuanchaoBot/1.0 (+https://github.com/ZHANGFA88/shikuang)`，架构裁定不许编造邮箱）、港交所披露易（titleSearchServlet，result 为字符串化 JSON 需二次解包）、巨潮资讯（hisAnnouncement form POST，深沪两市；近 24h、每轮上限 200 条） |
 | signal | 免费讨论源，推给 `hot_signal` 信源（只供热点讨论证据、永不成条） | 东方财富股吧、雪球（patchright 首页预热种 xq_a_token cookie 后调 API）、Hacker News |
 
 抓取链（2026-10-17 Mac 两次干跑定版）：feed/api 普通请求优先（RSS XML 和 JSON 不能被浏览器包装成 HTML，否则解析全灭），403/429 时依次升级 curl_cffi（chrome 伪装）→ StealthyFetcher → DynamicFetcher；page 模式浏览器渲染优先；雪球走 patchright 首页预热种 `xq_a_token` cookie 后在同一上下文调 API。page 模式只搬标题与链接（与 RSS 订阅等价，不抓正文）；链接里带日期的源用链接日期作发布时间并只收最近 2–3 天，其余用抓取时刻近似。
@@ -32,7 +32,7 @@ python3 -m venv .venv-scrapling
 .venv-scrapling/bin/scrapling install
 .venv-scrapling/bin/python scripts/push-scrapling.py --dry-run   # 先看抓取是否正常（只抓不推）
 .venv-scrapling/bin/python scripts/push-scrapling.py             # 正式推一次
-bash scripts/setup-scrapling-cron.sh                             # 装成每 30 分钟自动跑
+bash scripts/setup-scrapling-cron.sh                             # 装定时：全量每 30 分钟 + 快讯子集（新浪7×24/华尔街见闻，--only）每 5 分钟单独一轮
 ```
 
 注意：推送器走 `.env` 里的 `INGEST_TOKEN`，且观潮服务要在运行中；feed 模式里巴伦四路均 403 会如实跳过（其余源不受影响）。
