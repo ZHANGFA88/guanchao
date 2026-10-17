@@ -544,7 +544,7 @@ function ItemView({ item }: { item: SiteItemDetail }) {
             <p className="mt-5 text-[13px] leading-relaxed text-ink-4">
               同一新闻，精选展示
               <Link viewTransition to={`/items/${item.sameEvent.id}`} className="text-ink-3 transition-colors hover:text-accent">
-                《{item.sameEvent.title}》
+                《{displayTitle(item.sameEvent)}》
               </Link>
             </p>
           )}

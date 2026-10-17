@@ -69,7 +69,7 @@ export interface FeedItemSummary extends Pick<ItemSummary, "id" | "title" | "tit
    * A selected report whose fact is represented by another report (全部动态 and search): that report,
    * so the card can say "同一新闻，精选展示《…》" instead of claiming a seat of its own.
    */
-  sameEvent?: { id: string; title: string } | null;
+  sameEvent?: { id: string; title: string; titleZh: string | null } | null;
 }
 
 export interface GroupInfo {
@@ -149,7 +149,7 @@ export interface SiteItemDetail extends ItemSummary {
   /** The post with all its media; its text is the body. */
   x: Omit<XPostView, "text" | "translation"> | null;
   /** Selected, but its fact's seat is held by this report: marked 同新闻, without a reason of its own. */
-  sameEvent?: { id: string; title: string } | null;
+  sameEvent?: { id: string; title: string; titleZh: string | null } | null;
   readingMode: "full" | "summary-only";
   author: string | null;
   /** Whitelisted HTML of the language shown; the other one is null. */
@@ -461,7 +461,7 @@ export interface TopicSummary extends TopicLink {
   /** Enough content to be listed and indexed. */
   indexable: boolean;
   /** The newest selected report. */
-  latest: { title: string; at: string } | null;
+  latest: { title: string; titleZh: string | null; at: string } | null;
 }
 
 export interface TopicsResponse {
