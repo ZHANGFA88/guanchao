@@ -201,7 +201,7 @@ export async function loadStoryDetail(storyId: number, now = new Date()): Promis
 const SPARK_HOURS = 24;
 
 /** Hourly heat of the ranked stories over the day before the ranking, one slot per hour. */
-async function sparklines(storyIds: number[], at: Date): Promise<Map<number, Array<number | null>>> {
+export async function sparklines(storyIds: number[], at: Date): Promise<Map<number, Array<number | null>>> {
   const end = Math.floor(at.getTime() / 3600000) * 3600000;
   const start = end - SPARK_HOURS * 3600000;
   const rows = storyIds.length
