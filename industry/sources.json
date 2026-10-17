@@ -1,5 +1,5 @@
 {
-  "$comment": "市况台信源：首次启动时导入（scripts/seed.ts），已存在的不会被覆盖。之后在后台“信源”里新建、修改和暂停。",
+  "$comment": "观潮信源：首次启动时导入（scripts/seed.ts），已存在的不会被覆盖。之后在后台“信源”里新建、修改和暂停。",
   "sources": [
     {
       "id": "rss-fed-press",

@@ -53,4 +53,4 @@ EOF
 launchctl bootstrap "gui/$(id -u)" "$PLIST"
 echo "✓ 已安装 launchd 定时任务：每 30 分钟跑一次 scripts/push-scrapling.py（日志 $LOG）。"
 echo "  卸载：bash scripts/setup-scrapling-cron.sh --uninstall"
-echo "注意：推送走 .env 里的 INGEST_TOKEN，市况台（docker compose）要保持运行。"
+echo "注意：推送走 .env 里的 INGEST_TOKEN，观潮（docker compose）要保持运行。"

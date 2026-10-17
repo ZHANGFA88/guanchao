@@ -1,4 +1,4 @@
-// 市况台外部推送器：把 fusion-office 的财经快讯与 AISafetyHot 日报灌进 AIHOT 的 external 信源。
+// 观潮外部推送器：把 fusion-office 的财经快讯与 AISafetyHot 日报灌进 AIHOT 的 external 信源。
 // 用法：node scripts/push-finsight.mjs [--serve http://127.0.0.1:8772] [--api http://127.0.0.1:3001]
 // 依赖 .env 里的 INGEST_TOKEN。快讯按 url 去重由服务端处理，可重复运行。
 import { readFileSync, existsSync } from 'node:fs';

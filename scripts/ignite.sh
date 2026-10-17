@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 市况台一键点火：在本机把整站（数据库 + API + worker + 网页）跑起来。
+# 观潮一键点火：在本机把整站（数据库 + API + worker + 网页）跑起来。
 # 前置：先在 .env 里填好模型 Key（见 docs/IGNITE.md 与 docs/PROVIDERS.md）。
 # 用法：bash scripts/ignite.sh
 set -euo pipefail
@@ -85,5 +85,5 @@ echo "  - 看页面：打开 http://localhost:${PORT_WEB} ，首页「今天收�
 echo "  - 管理后台：http://localhost:${PORT_WEB}/admin  （密码在 .env 的 ADMIN_PASSWORD）"
 
 step "完成"
-echo "✓ 市况台已点火：http://localhost:${PORT_WEB}"
+echo "✓ 观潮已点火：http://localhost:${PORT_WEB}"
 echo "接下来按 docs/IGNITE.md 的「点火后验收清单」逐项确认。"

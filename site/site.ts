@@ -18,14 +18,14 @@ export const EDITION_WHEN = {
 
 export const SITE = {
   /** 站名：导航、页面标题、分享图、RSS、MCP、后台都用它。 */
-  name: "市况台",
+  name: "观潮",
   /**
    * 行业词：拼进默认说法里，比如“AI 日报”“AI 动态”。
    * 改成“法律”“HR”“黄金”之类，页面上就会变成“法律日报”“法律动态”。
    */
   subject: "市场",
   /** 首页的完整标题（浏览器标签、搜索结果）。 */
-  homeTitle: "市况台 — 政策与市场动态 · 每日精选与日报",
+  homeTitle: "观潮 — 政策与市场动态 · 每日精选与日报",
   /** 主题目录页（/topics）的标题。 */
   topicsTitle: "市场主题：政策、指数、行业与公司的最新动态",
   /** 反馈表单输入框里的示例。 */
@@ -70,7 +70,7 @@ export const SITE = {
   github: null as string | null,
   /** 结构化数据里的网站运营者（搜索引擎用）。 */
   organization: {
-    name: "市况台",
+    name: "观潮",
     /** 创始人（选填）。 */
     founder: null as null | { name: string; alternateName?: string; jobTitle?: string; description?: string; url?: string },
   },
