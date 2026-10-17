@@ -5,6 +5,7 @@ import { IconBookmark } from "../../components/icons";
 import { SourceAvatar } from "../../components/ui/SourceAvatar";
 import { Lightbox } from "../../components/ui/Lightbox";
 import { toggleStar, useIsStarred } from "../../lib/local-state";
+import { displaySummary, displayTitle } from "../../lib/display-text";
 
 /** The source's name, or, for X, avatar + display name + @handle. */
 export function SourceLine({ item, className = "" }: { item: Pick<FeedItemSummary, "source" | "x" | "channel">; className?: string }) {
@@ -51,7 +52,7 @@ export function MediaThumbs({ media, className = "" }: { media: MediaView[]; cla
   );
 }
 
-type Starrable = Pick<FeedItemSummary, "id" | "title" | "summary" | "source" | "publishedAt" | "score" | "selected">;
+type Starrable = Pick<FeedItemSummary, "id" | "title" | "titleZh" | "summary" | "summaryZh" | "source" | "publishedAt" | "score" | "selected">;
 
 /** Whether an item is in this browser's 收藏, a toggle, and a counter that bumps when it is added. */
 export function useStar(item: Starrable) {
@@ -59,7 +60,7 @@ export function useStar(item: Starrable) {
   const [pulse, setPulse] = useState(0);
   const toggle = () => {
     const added = toggleStar({
-      id: item.id, title: item.title, summary: item.summary, sourceName: item.source.name,
+      id: item.id, title: displayTitle(item), summary: displaySummary(item), sourceName: item.source.name,
       publishedAt: item.publishedAt, score: item.score, aiSelected: item.selected,
     });
     if (added) setPulse((p) => p + 1);

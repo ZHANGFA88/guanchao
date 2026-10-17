@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router";
 import type { MonitorFeedItem, MonitorResponse } from "@aihot/contracts/site";
+import { displaySummary, displayTitle } from "../../lib/display-text";
 import { StarMap } from "./StarMap";
 import { Spider } from "./Spider";
 import { setMoving, useMoving } from "./motion-store";
@@ -128,8 +129,8 @@ export function Observatory() {
                     <span className="font-medium text-ink-2">{item.source}</span>
                     <time className="ml-auto">{fmtDayTime(item.at)}</time>
                   </div>
-                  <p data-field="title" className="mt-1 line-clamp-2 text-[13px] font-medium leading-snug">{item.title}</p>
-                  {item.summary && <p className="mt-0.5 line-clamp-1 text-[12px] text-ink-3">{item.summary}</p>}
+                  <p data-field="title" className="mt-1 line-clamp-2 text-[13px] font-medium leading-snug">{displayTitle(item)}</p>
+                  {displaySummary(item) && <p className="mt-0.5 line-clamp-1 text-[12px] text-ink-3">{displaySummary(item)}</p>}
                   {item.topics.length > 0 && (
                     <div data-field="topics" className="mt-1.5 flex flex-wrap items-center gap-1">
                       {item.topics.slice(0, 3).map((slug) => (
@@ -190,7 +191,7 @@ export function Observatory() {
             <div>
               {focusItems.length > 0 && (
                 <div className="obs-receive rounded-tile border border-line-soft bg-surface-2 px-3 py-2.5" key={focusItems[focusPos % focusItems.length]!.id}>
-                  <p className="text-[13.5px] font-medium leading-snug">{focusItems[focusPos % focusItems.length]!.title}</p>
+                  <p className="text-[13.5px] font-medium leading-snug">{displayTitle(focusItems[focusPos % focusItems.length]!)}</p>
                   <p className="mt-1 text-[11.5px] text-ink-4">{fmtDayTime(focusItems[focusPos % focusItems.length]!.at)} · {focusItems[focusPos % focusItems.length]!.source}</p>
                 </div>
               )}
@@ -205,7 +206,7 @@ export function Observatory() {
             <div className="scrollbar-thin max-h-[540px] overflow-y-auto pr-1">
               {(data?.feed.items ?? []).map((item) => (
                 <Link key={item.id} to="/all" className="block border-b border-line-soft px-1 py-2 last:border-0 hover:bg-surface-2">
-                  <p className="line-clamp-1 text-[13px] font-medium">{item.title}</p>
+                  <p className="line-clamp-1 text-[13px] font-medium">{displayTitle(item)}</p>
                   <p className="mt-0.5 text-[11px] text-ink-4">{item.source} · {fmtDayTime(item.at)}</p>
                 </Link>
               ))}
@@ -222,7 +223,7 @@ export function Observatory() {
                       <span className="font-medium text-ink-2">{r.item.source}</span>
                       <span className="ml-auto">收录于 {fmtDayTime(r.item.at)}</span>
                     </div>
-                    <p className="mt-1 line-clamp-2 text-[13.5px] font-medium leading-snug">{r.item.title}</p>
+                    <p className="mt-1 line-clamp-2 text-[13.5px] font-medium leading-snug">{displayTitle(r.item)}</p>
                     {r.slug && <p className="mt-1 text-[11.5px] text-ink-3">扫描结果 → 话题「{topicName(r.slug)}」</p>}
                   </div>
                   <p className="obs-log-in mt-1 rounded-mark px-2 py-1 text-[11.5px] text-ink-3">

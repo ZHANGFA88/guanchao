@@ -6,6 +6,7 @@ import { Sheet } from "../../components/ui/Sheet";
 import type { GroupInfo, GroupReport, GroupReportsResponse, TimelineFilters } from "@aihot/contracts/site";
 import { IconArrowUpRight, IconChevronDown, IconChevronRight } from "../../components/icons";
 import { monthDayTime } from "../../lib/format";
+import { displayTitle } from "../../lib/display-text";
 import { isReload } from "../../lib/restore";
 import { listPath, filterParams } from "../../lib/seo";
 import { sessionCache } from "../../lib/session-cache";
@@ -129,7 +130,7 @@ export function GroupSources({ group, filters, parentId }: { group: GroupInfo; f
             <li key={r.id} className="flex items-baseline gap-2 py-1.5 text-[13px]">
               <span className="w-[108px] shrink-0 truncate text-ink-4">{r.source.name}</span>
               <Link viewTransition to={`/items/${r.id}`} className="min-w-0 flex-1 truncate text-ink-2 hover:text-accent">
-                {r.title}
+                {displayTitle(r)}
               </Link>
               <a href={r.originalUrl} target="_blank" rel="noopener noreferrer" aria-label="打开原文" className="shrink-0 text-ink-4 hover:text-accent">
                 <IconArrowUpRight size={13} />
@@ -191,7 +192,7 @@ function GroupSheet({ open, onClose, group, filters, parentId }: {
                 <span className="block text-[12.5px] text-ink-4">
                   {r.source.name} · <span className="num">{monthDayTime(r.timelineAt)}</span>
                 </span>
-                <span className="mt-0.5 line-clamp-2 text-[15px] leading-[1.5] text-ink-2">{r.title}</span>
+                <span className="mt-0.5 line-clamp-2 text-[15px] leading-[1.5] text-ink-2">{displayTitle(r)}</span>
               </Link>
               <a href={r.originalUrl} target="_blank" rel="noopener noreferrer" aria-label="打开原文" className="-mr-2 grid size-11 shrink-0 place-items-center rounded-full text-ink-4 active:bg-bg-sunk">
                 <IconArrowUpRight size={16} />

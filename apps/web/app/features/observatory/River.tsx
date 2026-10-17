@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { MonitorResponse } from "@aihot/contracts/site";
+import { displaySummary, displayTitle } from "../../lib/display-text";
 import { SourceAvatar } from "../../components/ui/SourceAvatar";
 
 const GROUP_COLOR: Record<string, string> = { company: "#4a6fa5", field: "#c25e3a", genre: "#b03a6b" };
@@ -171,8 +172,8 @@ export function River() {
                 <span className="min-w-0 truncate text-[12px] font-medium text-ink-2">{item.source}</span>
                 <time className="ml-auto shrink-0 text-[11px] tabular-nums text-ink-4">{fmtMD(item.at)}</time>
               </div>
-              <p className="mt-1 line-clamp-2 text-[15px] font-bold leading-snug">{item.title}</p>
-              {item.summary && <p className="mt-1 line-clamp-2 text-[12.5px] leading-relaxed text-ink-3">{item.summary}</p>}
+              <p className="mt-1 line-clamp-2 text-[15px] font-bold leading-snug">{displayTitle(item)}</p>
+              {displaySummary(item) && <p className="mt-1 line-clamp-2 text-[12.5px] leading-relaxed text-ink-3">{displaySummary(item)}</p>}
               <div className="mt-1.5 flex items-center justify-between gap-2 text-[11px]">
                 <span className="min-w-0 truncate text-ink-4">{topicTag(item.topics)}</span>
                 {item.url && (
